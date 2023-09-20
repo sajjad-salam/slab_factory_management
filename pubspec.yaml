@@ -38,6 +38,8 @@ dependencies:
   firebase_core: ^2.16.0
   cloud_firestore: ^4.9.2
   get: ^4.6.5
+  shared_preferences: ^2.2.1
+  connectivity_plus: ^4.0.2
 
 dev_dependencies:
   flutter_test:
