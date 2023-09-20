@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "12392756132",
+    "project_id": "factory-management-a0311",
+    "storage_bucket": "factory-management-a0311.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:12392756132:android:84ddaeafd28672e17d8731",
+        "android_client_info": {
+          "package_name": "com.example.slab_factory_management"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKIXbUOFUDoHOiLg2W7B_dq775frQe1Mw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
