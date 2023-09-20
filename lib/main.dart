@@ -1,4 +1,5 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -133,7 +134,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  final _controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -168,7 +168,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 storeNumberInDatabase();
               },
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: ' ادخل السعر ',
               ),
             ),
