@@ -93,16 +93,12 @@ class _MyHomePageState extends State<MyHomePage> {
     // var connectivityResult = await Connectivity().checkConnectivity();
     // if (connectivityResult == ConnectivityResult.none) {
     try {
-      // Get a reference to the Firestore instance
       FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-      // Create a new collection reference
       CollectionReference collectionRef = firestore.collection('counters');
 
-      // Create a new document with a generated ID
       DocumentReference docRef = collectionRef.doc();
 
-      // Set the data for the document
       await docRef.set({
         'value': _counter.toString(),
       });
@@ -117,7 +113,14 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController numberController = TextEditingController();
 
   void storeNumberInDatabase() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
     String number = numberController.text;
+    int intval = int.parse(number);
+    setState(() {
+      _counter = intval;
+      prefs.setInt('counter', _counter);
+    });
 
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -159,7 +162,6 @@ class _MyHomePageState extends State<MyHomePage> {
             TextField(
               controller: numberController,
               onSubmitted: (value) {
-                //              setState(() => _counter += int.parse(_controller));
                 setState(() {
                   int intValue = int.parse(numberController.text);
 
