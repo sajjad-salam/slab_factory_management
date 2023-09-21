@@ -56,7 +56,7 @@ class _champ_screenState extends State<home_screen> {
               const SizedBox(
                   height: 10), // Adjust the spacing between the items
               mybutton(
-                rout: "",
+                rout: "/Production",
                 size: MediaQuery.of(context).size,
                 name: 'الأنتاخ',
                 icon: const Icon(Icons.check_box),
@@ -80,7 +80,7 @@ class _champ_screenState extends State<home_screen> {
                   height: 10), // Adjust the spacing between the items
 
               mybutton(
-                rout: "",
+                rout: "/notes",
                 size: MediaQuery.of(context).size,
                 name: 'ملاحضات',
                 icon: const Icon(Icons.notes),

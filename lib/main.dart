@@ -10,8 +10,10 @@ import 'package:slab_factory_management/screens/Incoming_page.dart';
 import 'package:slab_factory_management/screens/home/home.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:slab_factory_management/screens/production_page.dart';
 
 import 'screens/login_page.dart';
+import 'screens/notes_page.dart';
 import 'screens/out_page.dart';
 import 'screens/worker_page.dart';
 
@@ -53,6 +55,14 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: "/worker",
           page: () => WorkersPage(),
+        ),
+        GetPage(
+          name: "/Production",
+          page: () => ProductionPage(),
+        ),
+        GetPage(
+          name: "/notes",
+          page: () => NotesPage(),
         ),
       ],
     );

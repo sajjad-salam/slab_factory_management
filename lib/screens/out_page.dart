@@ -10,8 +10,10 @@ class out_screen extends StatefulWidget {
 
 class _out_screenState extends State<out_screen> {
   List<Customer> customers = [
-    Customer(name: 'John Doe', customerNumber: 1),
-    Customer(name: 'Jane Smith', customerNumber: 2),
+    // Customer(name: 'سجاد سلام', customerNumber: 120),
+    // Customer(name: 'محمد بدر', customerNumber: 200),
+    Customer(15, 27, 48, 18, name: "سجاد سلام", customerNumber: 200),
+    Customer(15, 27, 48, 18, name: " محمد بدر", customerNumber: 200)
     // Add more customers as needed
   ];
 
@@ -53,8 +55,9 @@ class _out_screenState extends State<out_screen> {
 
   void addCustomer(String customerName) {
     final customerNumber = customers.length + 1;
-    final newCustomer =
-        Customer(name: customerName, customerNumber: customerNumber);
+    final newCustomer = Customer(12, 12, 12, 12,
+        name: customerName, customerNumber: customerNumber);
+    // Customer(name: customerName, customerNumber: customerNumber);
     setState(() {
       customers.add(newCustomer);
       filteredCustomers = customers;
@@ -163,8 +166,16 @@ class _out_screenState extends State<out_screen> {
 class Customer {
   final String name;
   final int customerNumber;
+  final int flen;
+  final int mastek;
+  final int flankot;
+  final int zefet;
 
-  Customer({
+  Customer(
+    this.flen,
+    this.mastek,
+    this.flankot,
+    this.zefet, {
     required this.name,
     required this.customerNumber,
   });
@@ -183,6 +194,10 @@ class CustomerDetailsPage extends StatefulWidget {
 
 class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
   late TextEditingController shtagernumber;
+  late TextEditingController zefet;
+  late TextEditingController mastek;
+  late TextEditingController flankot;
+  late TextEditingController flen;
 
   @override
   void initState() {
@@ -218,7 +233,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
             ),
             const SizedBox(height: 20),
             TextField(
-              controller: shtagernumber,
+              controller: mastek,
               decoration: const InputDecoration(
                 labelText: 'عدد الماستك',
               ),
@@ -226,7 +241,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
             ),
             const SizedBox(height: 20),
             TextField(
-              controller: shtagernumber,
+              controller: zefet,
               decoration: const InputDecoration(
                 labelText: 'عدد الزفت',
               ),
@@ -234,7 +249,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
             ),
             const SizedBox(height: 20),
             TextField(
-              controller: shtagernumber,
+              controller: flen,
               decoration: const InputDecoration(
                 labelText: 'عدد الفلين',
               ),
@@ -242,7 +257,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
             ),
             const SizedBox(height: 20),
             TextField(
-              controller: shtagernumber,
+              controller: flankot,
               decoration: const InputDecoration(
                 labelText: 'عدد الفلانكوت',
               ),
@@ -251,11 +266,23 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
+                int intflen = int.parse(flen.text);
+                int intzefet = int.parse(zefet.text);
+                int intflankot = int.parse(flankot.text);
+                // int intshtager=int.parse(shtagernumber.text);
+                int intmastek = int.parse(mastek.text);
+
                 final updatedCustomer = Customer(
-                  name: widget.customer.name,
-                  customerNumber: int.tryParse(shtagernumber.text) ??
-                      widget.customer.customerNumber,
-                );
+                    intflen, intmastek, intflankot, intzefet,
+                    name: widget.customer.name,
+                    customerNumber: int.tryParse(shtagernumber.text) ??
+                        widget.customer.customerNumber);
+                // final updatedCustomer = Customer(
+                //   flankot:flankot
+                //   name: widget.customer.name,
+                //   customerNumber: int.tryParse(shtagernumber.text) ??
+                //       widget.customer.customerNumber,
+                // );
 
                 Navigator.pop(context, updatedCustomer);
               },

@@ -1,15 +1,19 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class WorkersPage extends StatefulWidget {
+  const WorkersPage({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _WorkersPageState createState() => _WorkersPageState();
 }
 
 class _WorkersPageState extends State<WorkersPage> {
   List<Worker> workers = [
-    Worker(name: 'John Doe', orderAmount: 10),
-    Worker(name: 'Jane Smith', orderAmount: 5),
-    // Add more workers as needed
+    Worker(1, name: "سجاد", orderAmount: 19),
+    Worker(2, name: "سلام", orderAmount: 20),
+    Worker(5, name: "محمد", orderAmount: 40)
   ];
 
   List<Worker> filteredWorkers = [];
@@ -39,8 +43,12 @@ class _WorkersPageState extends State<WorkersPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Workers'),
+      appBar: const CupertinoNavigationBar(
+        previousPageTitle: "رجوع",
+        middle: Text(
+          "صفحة العمال ",
+          style: TextStyle(fontFamily: "myfont", fontSize: 25),
+        ),
       ),
       body: Column(
         children: [
@@ -51,7 +59,7 @@ class _WorkersPageState extends State<WorkersPage> {
               onChanged: (value) {
                 filterWorkers(value);
               },
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Search',
                 prefixIcon: Icon(Icons.search),
               ),
@@ -63,12 +71,14 @@ class _WorkersPageState extends State<WorkersPage> {
               itemBuilder: (context, index) {
                 return ListTile(
                   title: Text(filteredWorkers[index].name),
-                  subtitle: Text('Order Amount: ${filteredWorkers[index].orderAmount}'),
+                  subtitle: Text(
+                      'Order Amount: ${filteredWorkers[index].orderAmount}'),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => WorkerDetailsPage(worker: filteredWorkers[index]),
+                        builder: (context) =>
+                            WorkerDetailsPage(worker: filteredWorkers[index]),
                       ),
                     );
                   },
@@ -85,8 +95,10 @@ class _WorkersPageState extends State<WorkersPage> {
 class Worker {
   final String name;
   final int orderAmount;
+  final int days;
 
-  Worker({
+  Worker(
+    this.days, {
     required this.name,
     required this.orderAmount,
   });
@@ -100,22 +112,33 @@ class WorkerDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Worker Details'),
+      appBar: CupertinoNavigationBar(
+        previousPageTitle: "رجوع",
+        middle: Text(
+          worker.name.toString(),
+          style: const TextStyle(fontFamily: "myfont", fontSize: 25),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Text(
-              'Name: ${worker.name}',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Order Amount: ${worker.orderAmount}',
-              style: TextStyle(fontSize: 18),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                const SizedBox(height: 10),
+                Text(
+                    textAlign: TextAlign.end,
+                    'الحساب: ${worker.orderAmount}',
+                    style: const TextStyle(fontFamily: "myfont", fontSize: 25)),
+                const SizedBox(height: 10),
+                Text(
+                    textAlign: TextAlign.end,
+                    'الايام: ${worker.days}',
+                    style: const TextStyle(fontFamily: "myfont", fontSize: 25)),
+              ],
             ),
           ],
         ),
@@ -123,4 +146,3 @@ class WorkerDetailsPage extends StatelessWidget {
     );
   }
 }
-
