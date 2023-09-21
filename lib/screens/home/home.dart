@@ -46,7 +46,7 @@ class _champ_screenState extends State<home_screen> {
                   height: 10), // Adjust the spacing between the items
 
               mybutton(
-                rout: "",
+                rout: "/incoming",
                 size: MediaQuery.of(context).size,
                 name: 'الوارد',
                 icon: const Icon(Icons.all_inbox_sharp),

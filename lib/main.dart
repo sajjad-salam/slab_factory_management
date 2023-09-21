@@ -1,8 +1,12 @@
 // ignore_for_file: avoid_print
 
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:slab_factory_management/screens/Incoming_page.dart';
 import 'package:slab_factory_management/screens/home/home.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,6 +34,10 @@ class MyApp extends StatelessWidget {
           name: "/login",
           page: () => MyHomePage(),
         ),
+        GetPage(
+          name: "/incoming",
+          page: () => incoming_screen(),
+        ),
       ],
     );
   }
@@ -51,76 +59,30 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _loadCounter();
+    startDataUpdateTimer();
   }
 
-  Future<QuerySnapshot> getCollectionSnapshot() async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    CollectionReference collectionRef = firestore.collection('counters');
-    QuerySnapshot querySnapshot = await collectionRef.get();
-    return querySnapshot;
-  }
-
-  void printLastValueInCollection() async {
-    try {
-      QuerySnapshot querySnapshot = await getCollectionSnapshot();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        QueryDocumentSnapshot lastDocument = querySnapshot.docs.last;
-        var lastData = lastDocument.data() as Map<String, dynamic>;
-        var lastValue = lastData['value'];
-        print('Last value in collection: $lastValue');
-      } else {
-        print('No documents found in the collection');
-      }
-    } catch (e) {
-      print('Error retrieving last value: $e');
-    }
-  }
-
-  Future<void> _loadCounter() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _counter = prefs.getInt('counter') ?? 0;
+  void startDataUpdateTimer() {
+    Timer.periodic(Duration(minutes: 1), (Timer timer) {
+      updateDataAndCheckInternet();
     });
   }
 
-  void addDataToCollection() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _counter++;
-      prefs.setInt('counter', _counter);
-    });
-    // var connectivityResult = await Connectivity().checkConnectivity();
-    // if (connectivityResult == ConnectivityResult.none) {
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
+  void updateDataAndCheckInternet() async {
+    bool hasInternet = await checkInternetConnectivity();
 
-      CollectionReference collectionRef = firestore.collection('counters');
-
-      DocumentReference docRef = collectionRef.doc();
-
-      await docRef.set({
-        'value': _counter.toString(),
-      });
-
-      print('Document added successfully!');
-    } catch (e) {
-      print('Error adding document: $e');
+    if (hasInternet) {
+      // Perform the data update
+      await updateDataInDatabase(_counter.toString());
+    } else {
+      print('No internet connection available. Data update postponed.');
     }
-    // }
   }
 
-  TextEditingController numberController = TextEditingController();
-
-  void storeNumberInDatabase() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
+  Future<void> updateDataInDatabase(String data) async {
+    // Perform the data update logic using the provided data
+    // ...
     String number = numberController.text;
-    int intval = int.parse(number);
-    setState(() {
-      _counter = intval;
-      prefs.setInt('counter', _counter);
-    });
 
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -134,6 +96,52 @@ class _MyHomePageState extends State<MyHomePage> {
       print('Number stored in the database successfully!');
     } catch (e) {
       print('Error storing number in the database: $e');
+    }
+    print('Data updated successfully!');
+    Get.snackbar("نقل", "تم نقل البيانات بنجاح",
+        snackPosition: SnackPosition.BOTTOM);
+  }
+
+  Future<void> _loadCounter() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _counter = prefs.getInt('counter') ?? 0;
+    });
+  }
+
+  // التحقق من اتصال الانترنت
+  Future<bool> checkInternetConnectivity() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    return connectivityResult != ConnectivityResult.none;
+  }
+
+  TextEditingController numberController = TextEditingController();
+
+  void storeNumberInDatabase() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool hasInternet = await checkInternetConnectivity();
+
+    String number = numberController.text;
+    int intval = int.parse(number);
+    setState(() {
+      _counter = intval;
+      prefs.setInt('counter', _counter);
+    });
+
+    if (hasInternet) {
+      try {
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        DocumentReference docRef =
+            firestore.collection('counters').doc('myCounter');
+
+        await docRef.set({
+          'value': number,
+        });
+
+        print('Number stored in the database successfully!');
+      } catch (e) {
+        print('Error storing number in the database: $e');
+      }
     }
   }
 
@@ -179,10 +187,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          addDataToCollection();
-          printLastValueInCollection();
           // _incrementCounter();
-          // Get.toNamed("/login");
+          Get.toNamed("/home");
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),

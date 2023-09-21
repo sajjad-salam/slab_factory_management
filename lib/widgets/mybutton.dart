@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class mybutton extends StatelessWidget {
   const mybutton({
@@ -7,7 +8,8 @@ class mybutton extends StatelessWidget {
     required this.size,
     required this.name,
     required this.icon,
-    required this.color, required this.rout,
+    required this.color,
+    required this.rout,
   });
   final String rout;
   final Size size;
@@ -32,7 +34,13 @@ class mybutton extends StatelessWidget {
               child: InkWell(
                 onTap: () {
                   // فقط قم بأزالة التعليق عن السطر التالي
-                  // Get.toNamed("$rout");
+                  try {
+                    if (rout != null) {
+                      Get.toNamed(rout);
+                    }
+                  } catch (e) {
+                    print(e);
+                  }
                 },
                 child: Stack(
                   alignment: Alignment.bottomCenter,
