@@ -11,7 +11,9 @@ import 'package:slab_factory_management/screens/home/home.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'screens/login_page.dart';
 import 'screens/out_page.dart';
+import 'screens/worker_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +36,10 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: "/login",
+          page: () => const login_page(),
+        ),
+        GetPage(
+          name: "/homme",
           page: () => const MyHomePage(),
         ),
         GetPage(
@@ -43,6 +49,10 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: "/out",
           page: () => const out_screen(),
+        ),
+        GetPage(
+          name: "/worker",
+          page: () => WorkersPage(),
         ),
       ],
     );
