@@ -11,6 +11,8 @@ import 'package:slab_factory_management/screens/home/home.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'screens/out_page.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -32,11 +34,15 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: "/login",
-          page: () => MyHomePage(),
+          page: () => const MyHomePage(),
         ),
         GetPage(
           name: "/incoming",
-          page: () => incoming_screen(),
+          page: () => const incoming_screen(),
+        ),
+        GetPage(
+          name: "/out",
+          page: () => const out_screen(),
         ),
       ],
     );
@@ -70,9 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void updateDataAndCheckInternet() async {
     bool hasInternet = await checkInternetConnectivity();
-
     if (hasInternet) {
-      // Perform the data update
       await updateDataInDatabase(_counter.toString());
     } else {
       print('No internet connection available. Data update postponed.');
@@ -80,17 +84,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> updateDataInDatabase(String data) async {
-    // Perform the data update logic using the provided data
-    // ...
-    String number = numberController.text;
-
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       DocumentReference docRef =
           firestore.collection('counters').doc('myCounter');
 
       await docRef.set({
-        'value': number,
+        'value': _counter,
       });
 
       print('Number stored in the database successfully!');
@@ -106,6 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       _counter = prefs.getInt('counter') ?? 0;
+      print(_counter);
     });
   }
 
@@ -138,9 +139,9 @@ class _MyHomePageState extends State<MyHomePage> {
           'value': number,
         });
 
-        print('Number stored in the database successfully!');
+        Get.snackbar("رسالة ", "تم بنجاح", snackPosition: SnackPosition.BOTTOM);
       } catch (e) {
-        print('Error storing number in the database: $e');
+        Get.snackbar("خطأ", "$e", snackPosition: SnackPosition.BOTTOM);
       }
     }
   }
