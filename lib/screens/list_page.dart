@@ -2,10 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ListPage extends StatelessWidget {
+  const ListPage({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const CupertinoNavigationBar(
+    return const Scaffold(
+      appBar: CupertinoNavigationBar(
         previousPageTitle: "رجوع",
         middle: Text(
           "التقرير ",

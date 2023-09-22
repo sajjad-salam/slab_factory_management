@@ -1,0 +1,90 @@
+ @override
+  void initState() {
+    super.initState();
+    _loadCounter();
+    startDataUpdateTimer();
+  }
+
+
+  
+  void startDataUpdateTimer() {
+    Timer.periodic(const Duration(minutes: 1), (Timer timer) {
+      updateDataAndCheckInternet();
+    });
+  }
+
+  void updateDataAndCheckInternet() async {
+    bool hasInternet = await checkInternetConnectivity();
+    if (hasInternet) {
+      await updateDataInDatabase(cement.toString(),sand.toString(),aggregate.toString(),);
+    } else {
+      print('No internet connection available. Data update postponed.');
+    }
+  }
+
+  Future<void> updateDataInDatabase(String cement,String sand,String aggregate,) async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentReference docRef =
+          firestore.collection('incoming').doc('doc');
+
+      await docRef.set({
+        'sand': sand,
+        'cement': cement,
+        'aggregate': aggregate,
+      });
+
+      print('Number stored in the database successfully!');
+    } catch (e) {
+      print('Error storing number in the database: $e');
+    }
+    print('Data updated successfully!');
+    Get.snackbar("نقل", "تم نقل البيانات بنجاح",
+        snackPosition: SnackPosition.BOTTOM);
+  }
+
+  Future<void> _loadCounter() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      cement = prefs.getInt('cement') ?? 0;
+      print(cement);
+      cement = prefs.getInt('sand') ?? 0;
+      print(sand);
+      cement = prefs.getInt('aggregate') ?? 0;
+      print(aggregate);
+    });
+  }
+
+  Future<bool> checkInternetConnectivity() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    return connectivityResult != ConnectivityResult.none;
+  }
+
+
+ void storeNumberInDatabase() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool hasInternet = await checkInternetConnectivity();
+
+    // String number = numberController.text;
+    int intvalcement = int.parse(number);
+    setState(() {
+      _counter = intval;
+      prefs.setInt('counter', _counter);
+    });
+
+    if (hasInternet) {
+      try {
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        DocumentReference docRef =
+            firestore.collection('counters').doc('myCounter');
+
+        await docRef.set({
+          'value': number,
+        });
+
+        Get.snackbar("رسالة ", "تم بنجاح", snackPosition: SnackPosition.BOTTOM);
+      } catch (e) {
+        Get.snackbar("خطأ", "$e", snackPosition: SnackPosition.BOTTOM);
+      }
+    }
+  }

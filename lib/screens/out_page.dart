@@ -1,5 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // ignore: camel_case_types
 class out_screen extends StatefulWidget {
@@ -25,6 +31,8 @@ class _out_screenState extends State<out_screen> {
   void initState() {
     super.initState();
     filteredCustomers = customers;
+    loadCustomersFromDatabase();
+    loadCustomersFromStorage();
   }
 
   @override
@@ -49,17 +57,108 @@ class _out_screenState extends State<out_screen> {
       setState(() {
         customers[customerIndex] = updatedCustomer;
       });
+      await saveCustomersToStorage();
+      await saveCustomersToDatabase();
+    }
+  }
+
+  Future<void> saveCustomersToStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonList = customers.map((customer) => customer.toJson()).toList();
+      final jsonString = jsonEncode(jsonList);
+      await prefs.setString('customers', jsonString);
+    } catch (e) {
+      print('Error saving customers to storage: $e');
+    }
+  }
+
+  Future<void> loadCustomersFromStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('customers');
+      if (jsonString != null) {
+        final jsonList = jsonDecode(jsonString) as List<dynamic>;
+        setState(() {
+          customers = jsonList
+              .map((json) => Customer(
+                    json['flen'],
+                    json['mastek'],
+                    json['flankot'],
+                    json['zefet'],
+                    name: json['name'],
+                    customerNumber: json['customerNumber'],
+                  ))
+              .toList();
+          filteredCustomers = customers;
+        });
+      }
+    } catch (e) {
+      print('Error loading customers from storage: $e');
     }
   }
 
   void addCustomer(String customerName) {
-    final newCustomer =
-        Customer(0, 0, 0, 0, name: customerName, customerNumber: 0);
+    final newCustomer = Customer(
+      0,
+      0,
+      0,
+      0,
+      name: customerName,
+      customerNumber: 0,
+    );
     setState(() {
       customers.add(newCustomer);
       filteredCustomers = customers;
     });
     addCustomerController.clear();
+
+    saveCustomersToStorage();
+    saveCustomersToDatabase();
+  }
+
+  Future<void> saveCustomersToDatabase() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      CollectionReference customersCollection =
+          firestore.collection('customers');
+
+      await customersCollection.doc('customerData').set({
+        'customers': customers.map((customer) => customer.toJson()).toList(),
+      });
+    } catch (e) {
+      print('Error saving customers to database: $e');
+    }
+  }
+
+  Future<void> loadCustomersFromDatabase() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      CollectionReference customersCollection =
+          firestore.collection('customers');
+
+      DocumentSnapshot docSnapshot =
+          await customersCollection.doc('customerData').get();
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data() as Map<String, dynamic>;
+        final jsonList = data['customers'] as List<dynamic>;
+        setState(() {
+          customers = jsonList
+              .map((json) => Customer(
+                    json['flen'],
+                    json['mastek'],
+                    json['flankot'],
+                    json['zefet'],
+                    name: json['name'],
+                    customerNumber: json['customerNumber'],
+                  ))
+              .toList();
+          filteredCustomers = customers;
+        });
+      }
+    } catch (e) {
+      print('Error loading customers from database: $e');
+    }
   }
 
   @override
@@ -176,6 +275,17 @@ class Customer {
     required this.name,
     required this.customerNumber,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'customerNumber': customerNumber,
+      'flen': flen,
+      'mastek': mastek,
+      'flankot': flankot,
+      'zefet': zefet,
+    };
+  }
 }
 
 class CustomerDetailsPage extends StatefulWidget {
@@ -277,7 +387,6 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                     name: widget.customer.name,
                     customerNumber: int.tryParse(shtagernumber.text) ??
                         widget.customer.customerNumber);
-  
 
                 Navigator.pop(context, updatedCustomer);
               },

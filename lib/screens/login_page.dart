@@ -90,7 +90,7 @@ class _login_pageState extends State<login_page> {
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: CupertinoButton.filled(
                     onPressed: () {
-                      if (user.text == "aa" || password.text == "112233") {
+                      if (user.text == "aa" && password.text == "112233") {
                         Get.toNamed("/home");
                       } else {
                         Get.snackbar(

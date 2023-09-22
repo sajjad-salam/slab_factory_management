@@ -2,7 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'list_page.dart';
 
+// ignore: camel_case_types
 class report extends StatelessWidget {
+  const report({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -28,7 +31,7 @@ class report extends StatelessWidget {
                 ),
               );
             },
-            child: Text(
+            child: const Text(
               'تصدير التقرير',
               style: TextStyle(
                 fontFamily: "myfont",

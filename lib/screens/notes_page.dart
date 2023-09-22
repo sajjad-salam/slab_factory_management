@@ -1,5 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class Note {
+  final String title;
+  final String content;
+
+  Note({required this.title, required this.content});
+}
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
@@ -10,22 +20,78 @@ class NotesPage extends StatefulWidget {
 }
 
 class _NotesPageState extends State<NotesPage> {
-  List<String> notes = [];
+  List<Note> notes = [];
 
   TextEditingController noteController = TextEditingController();
-
-  void addNote() {
-    String newNote = noteController.text;
-    if (newNote.isNotEmpty) {
+  void addNote() async {
+    String newNoteTitle = noteController.text;
+    String newNoteContent = ''; // Add content here if needed
+    if (newNoteTitle.isNotEmpty) {
       setState(() {
-        notes.add(newNote);
+        notes.add(Note(title: newNoteTitle, content: newNoteContent));
         noteController.clear();
       });
+      await saveNotes(notes.cast<Note>());
     }
   }
 
   MaterialStateProperty<Color?> amberColor =
       MaterialStateProperty.all<Color?>(const Color.fromARGB(255, 105, 63, 0));
+  Future<List<Note>> loadNotes() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? notesJson = prefs.getStringList('notes');
+    return notesJson != null
+        ? notesJson.map((noteJson) => noteFromJson(noteJson)).toList()
+        : [];
+  }
+
+  void deleteNote(int index) {
+    setState(() {
+      Note deletedNote = notes.removeAt(index);
+      deleteNoteFromStorage(
+          deletedNote); // Call a function to delete the note from storage
+    });
+  }
+
+  void deleteNoteFromStorage(Note note) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? storedNotes = prefs.getStringList('notes');
+
+    if (storedNotes != null) {
+      String noteJson = noteToJson(note);
+      storedNotes.remove(noteJson);
+      await prefs.setStringList('notes', storedNotes);
+    }
+  }
+
+  Future<void> saveNotes(List<Note> notes) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> notesJson = notes.map((note) => noteToJson(note)).toList();
+    await prefs.setStringList('notes', notesJson);
+  }
+
+  String noteToJson(Note note) {
+    return jsonEncode({'title': note.title, 'content': note.content});
+  }
+
+  Note noteFromJson(String noteJson) {
+    Map<String, dynamic> json = jsonDecode(noteJson);
+    return Note(
+      title: json['title'],
+      content: json['content'],
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadNotes().then((loadedNotes) {
+      setState(() {
+        notes = loadedNotes;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,28 +105,49 @@ class _NotesPageState extends State<NotesPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Expanded(
               child: ListView.builder(
                 itemCount: notes.length,
                 itemBuilder: (context, index) {
-                  String note = notes[index];
+                  Note note = notes[index];
                   return ListTile(
                     title: Text(
                       textAlign: TextAlign.end,
-                      note,
+                      note.title,
                       style: const TextStyle(fontFamily: "myfont"),
+                    ),
+                    leading: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () {
+                        setState(() {
+                          deleteNote(index);
+                        });
+                      },
                     ),
                   );
                 },
               ),
             ),
             const SizedBox(height: 20),
-            TextField(
+            CupertinoTextField(
+              decoration: BoxDecoration(
+                // color: CupertinoColors.extraLightBackgroundGray,
+                borderRadius: BorderRadius.circular(10),
+              ),
               controller: noteController,
-              decoration: const InputDecoration(
-                labelText: 'اكتب الملاحضة هنا ',
+              autocorrect: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (value) {
+                addNote();
+              },
+              placeholder: ".... كتابة ملاحظة ",
+              // maxLength: 10,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontFamily: "myfont",
+                color: Color.fromARGB(255, 0, 0, 0), // Set the color to white
               ),
             ),
             const SizedBox(height: 10),
@@ -69,7 +156,10 @@ class _NotesPageState extends State<NotesPage> {
               onPressed: () {
                 addNote();
               },
-              child: const Text('اضافة ملاحضة'),
+              child: const Text(
+                'اضافة ملاحضة',
+                style: TextStyle(fontFamily: "myfont", fontSize: 20),
+              ),
             ),
           ],
         ),

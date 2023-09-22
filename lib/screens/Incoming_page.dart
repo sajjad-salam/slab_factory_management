@@ -1,7 +1,13 @@
 // ignore_for_file: file_names
 
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:get/get.dart';
 
 // ignore: camel_case_types
 class incoming_screen extends StatefulWidget {
@@ -13,9 +19,108 @@ class incoming_screen extends StatefulWidget {
 
 // ignore: camel_case_types
 class _incoming_screenState extends State<incoming_screen> {
-  int cement = 10;
-  int sand = 20;
-  int aggregate = 30;
+  int cement = 0;
+  int sand = 0;
+  int aggregate = 0;
+
+  Future<bool> checkInternetConnectivity() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    return connectivityResult != ConnectivityResult.none;
+  }
+
+  void updateDataAndCheckInternet() async {
+    bool hasInternet = await checkInternetConnectivity();
+    if (hasInternet) {
+      await updateDataInDatabase();
+    } else {
+      print('No internet connection available. Data update postponed.');
+    }
+  }
+
+  Future<void> _loadCounter() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      if (cement == 0) {
+        // Load cement only if it hasn't been initialized
+        cement = prefs.getInt('cement') ?? 0;
+        print(cement);
+      }
+      if (sand == 0) {
+        // Load sand only if it hasn't been initialized
+        sand = prefs.getInt('sand') ?? 0;
+        print(sand);
+      }
+      if (aggregate == 0) {
+        // Load aggregate only if it hasn't been initialized
+        aggregate = prefs.getInt('aggregate') ?? 0;
+        print(aggregate);
+      }
+      print('Cement: $cement, Sand: $sand, Aggregate: $aggregate');
+    });
+  }
+
+  void storeNumberInDatabase() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool hasInternet = await checkInternetConnectivity();
+
+    setState(() {
+      prefs.setInt('cement', cement);
+      prefs.setInt('sand', sand);
+      prefs.setInt('aggregate', aggregate);
+    });
+
+    if (hasInternet) {
+      try {
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        DocumentReference docRef = firestore.collection('incoming').doc('doc');
+
+        await docRef.set({
+          'sand': sand.toString(),
+          'cement': cement.toString(),
+          'aggregate': aggregate.toString(),
+        });
+
+        Get.snackbar("رسالة", "تم ارسال البيانات بنجاح",
+            snackPosition: SnackPosition.BOTTOM);
+      } catch (e) {
+        Get.snackbar("Error", "$e", snackPosition: SnackPosition.BOTTOM);
+      }
+    }
+  }
+
+  void startDataUpdateTimer() {
+    Timer.periodic(const Duration(minutes: 1), (Timer timer) {
+      updateDataAndCheckInternet();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCounter();
+    startDataUpdateTimer();
+  }
+
+  Future<void> updateDataInDatabase() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentReference docRef = firestore.collection('incoming').doc('doc');
+
+      await docRef.set({
+        'sand': sand,
+        'cement': cement,
+        'aggregate': aggregate,
+      });
+
+      print('Data stored in the database successfully!');
+    } catch (e) {
+      print('Error storing data in the database: $e');
+    }
+
+    print('Data updated successfully!');
+    Get.snackbar("تحديث", "تم تحديث البيانات ",
+        snackPosition: SnackPosition.BOTTOM);
+  }
 
   Future<void> _showSettingsDialog(BuildContext context) async {
     await showDialog(
@@ -49,31 +154,8 @@ class _incoming_screenState extends State<incoming_screen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       TextField(
+                        textInputAction: TextInputAction.next,
                         textAlign: TextAlign.right,
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          int intval = int.tryParse(value) ?? 0;
-                          setState(() {
-                            sand += intval;
-                          });
-                        },
-                        decoration: const InputDecoration(
-                          labelText: 'الرمل',
-                        ),
-                      ),
-                      TextField(
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          int intval = int.tryParse(value) ?? 0;
-                          setState(() {
-                            aggregate += intval;
-                          });
-                        },
-                        decoration: const InputDecoration(
-                          labelText: 'الحصو',
-                        ),
-                      ),
-                      TextField(
                         keyboardType: TextInputType.number,
                         onChanged: (value) {
                           int intval = int.tryParse(value) ?? 0;
@@ -82,7 +164,33 @@ class _incoming_screenState extends State<incoming_screen> {
                           });
                         },
                         decoration: const InputDecoration(
-                          labelText: 'الأسمنت',
+                          labelText: 'اسمنت',
+                        ),
+                      ),
+                      TextField(
+                        textInputAction: TextInputAction.next,
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          int intval = int.tryParse(value) ?? 0;
+                          setState(() {
+                            sand += intval;
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          labelText: 'رمل',
+                        ),
+                      ),
+                      TextField(
+                        textInputAction: TextInputAction.done,
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          int intval = int.tryParse(value) ?? 0;
+                          setState(() {
+                            aggregate += intval;
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          labelText: 'حصو',
                         ),
                       ),
                     ],
@@ -90,6 +198,7 @@ class _incoming_screenState extends State<incoming_screen> {
                   actions: [
                     TextButton(
                       onPressed: () {
+                        storeNumberInDatabase();
                         Navigator.of(context).pop();
                       },
                       child: const Text('حفض'),
@@ -173,7 +282,8 @@ class ElementCard extends StatefulWidget {
   final String elementName;
   final int elementValue;
 
-  const ElementCard({super.key, 
+  const ElementCard({
+    super.key,
     required this.elementName,
     required this.elementValue,
   });
