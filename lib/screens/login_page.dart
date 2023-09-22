@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+// ignore: camel_case_types
 class login_page extends StatefulWidget {
   const login_page({super.key});
 
@@ -103,15 +104,15 @@ class _login_pageState extends State<login_page> {
                         style: TextStyle(fontFamily: "myfont", fontSize: 18)),
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 40,
                 ),
-                Text(
+                const Text(
                   "تطوير المهندس سجاد سلام",
                   style: TextStyle(
                       fontFamily: "myfont", fontSize: 20, color: Colors.black),
                 ),
-                Text(
+                const Text(
                   "07748820206",
                   style: TextStyle(
                       fontFamily: "myfont", fontSize: 18, color: Colors.black),

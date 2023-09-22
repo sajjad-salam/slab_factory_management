@@ -15,6 +15,7 @@ import 'package:slab_factory_management/screens/production_page.dart';
 import 'screens/login_page.dart';
 import 'screens/notes_page.dart';
 import 'screens/out_page.dart';
+import 'screens/report_page.dart';
 import 'screens/worker_page.dart';
 
 void main() async {
@@ -54,15 +55,19 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: "/worker",
-          page: () => WorkersPage(),
+          page: () => const WorkersPage(),
         ),
         GetPage(
           name: "/Production",
-          page: () => ProductionPage(),
+          page: () => const ProductionPage(),
         ),
         GetPage(
           name: "/notes",
-          page: () => NotesPage(),
+          page: () => const NotesPage(),
+        ),
+        GetPage(
+          name: "/report",
+          page: () => report(),
         ),
       ],
     );
@@ -89,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void startDataUpdateTimer() {
-    Timer.periodic(Duration(minutes: 1), (Timer timer) {
+    Timer.periodic(const Duration(minutes: 1), (Timer timer) {
       updateDataAndCheckInternet();
     });
   }

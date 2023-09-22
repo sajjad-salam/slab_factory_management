@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import '../../widgets/mybutton.dart';
 
@@ -91,7 +90,7 @@ class _champ_screenState extends State<home_screen> {
                   height: 10), // Adjust the spacing between the items
 
               mybutton(
-                rout: "",
+                rout: "/report",
                 size: MediaQuery.of(context).size,
                 name: 'الجرد الشهري',
                 icon: const Icon(Icons.library_books_outlined),

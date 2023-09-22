@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+// ignore: camel_case_types
 class mybutton extends StatelessWidget {
   const mybutton({
     super.key,
@@ -35,11 +35,9 @@ class mybutton extends StatelessWidget {
                 onTap: () {
                   // فقط قم بأزالة التعليق عن السطر التالي
                   try {
-                    if (rout != null) {
-                      Get.toNamed(rout);
-                    }
-                  } catch (e) {
-                    print(e);
+                    Get.toNamed(rout);
+                                    // ignore: empty_catches
+                                    } catch (e) {
                   }
                 },
                 child: Stack(

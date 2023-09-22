@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+// ignore: camel_case_types
 class out_screen extends StatefulWidget {
   const out_screen({super.key});
 
@@ -8,13 +9,11 @@ class out_screen extends StatefulWidget {
   State<out_screen> createState() => _out_screenState();
 }
 
+// ignore: camel_case_types
 class _out_screenState extends State<out_screen> {
   List<Customer> customers = [
-    // Customer(name: 'سجاد سلام', customerNumber: 120),
-    // Customer(name: 'محمد بدر', customerNumber: 200),
     Customer(15, 27, 48, 18, name: "سجاد سلام", customerNumber: 200),
     Customer(15, 27, 48, 18, name: " محمد بدر", customerNumber: 200)
-    // Add more customers as needed
   ];
 
   List<Customer> filteredCustomers = [];
@@ -54,10 +53,8 @@ class _out_screenState extends State<out_screen> {
   }
 
   void addCustomer(String customerName) {
-    final customerNumber = customers.length + 1;
-    final newCustomer = Customer(12, 12, 12, 12,
-        name: customerName, customerNumber: customerNumber);
-    // Customer(name: customerName, customerNumber: customerNumber);
+    final newCustomer =
+        Customer(0, 0, 0, 0, name: customerName, customerNumber: 0);
     setState(() {
       customers.add(newCustomer);
       filteredCustomers = customers;
@@ -85,7 +82,7 @@ class _out_screenState extends State<out_screen> {
               onChanged: (value) {
                 filterCustomers(value);
               },
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'بحث',
                 prefixIcon: Icon(Icons.search),
               ),
@@ -99,14 +96,14 @@ class _out_screenState extends State<out_screen> {
                   title: Text(
                     filteredCustomers[index].name,
                     textAlign: TextAlign.end,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: "myfont",
                       fontSize: 20,
                     ),
                   ),
                   subtitle: Text(
                     '${filteredCustomers[index].customerNumber}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: "myfont",
                     ),
                     textAlign: TextAlign.end,
@@ -135,7 +132,7 @@ class _out_screenState extends State<out_screen> {
                 Expanded(
                   child: TextField(
                     controller: addCustomerController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       alignLabelWithHint: true,
                       labelText: 'اضافة عميل ',
                     ),
@@ -145,7 +142,7 @@ class _out_screenState extends State<out_screen> {
                   scale: 1.4,
                   child: IconButton(
                     alignment: Alignment.bottomCenter,
-                    icon: Icon(Icons.add_circle),
+                    icon: const Icon(Icons.add_circle),
                     onPressed: () {
                       String customerName = addCustomerController.text;
                       if (customerName.isNotEmpty) {
@@ -204,6 +201,10 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
     super.initState();
     shtagernumber =
         TextEditingController(text: widget.customer.customerNumber.toString());
+    flen = TextEditingController(text: widget.customer.flen.toString());
+    zefet = TextEditingController(text: widget.customer.zefet.toString());
+    flankot = TextEditingController(text: widget.customer.flankot.toString());
+    mastek = TextEditingController(text: widget.customer.mastek.toString());
   }
 
   @override
@@ -269,7 +270,6 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                 int intflen = int.parse(flen.text);
                 int intzefet = int.parse(zefet.text);
                 int intflankot = int.parse(flankot.text);
-                // int intshtager=int.parse(shtagernumber.text);
                 int intmastek = int.parse(mastek.text);
 
                 final updatedCustomer = Customer(
@@ -277,12 +277,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                     name: widget.customer.name,
                     customerNumber: int.tryParse(shtagernumber.text) ??
                         widget.customer.customerNumber);
-                // final updatedCustomer = Customer(
-                //   flankot:flankot
-                //   name: widget.customer.name,
-                //   customerNumber: int.tryParse(shtagernumber.text) ??
-                //       widget.customer.customerNumber,
-                // );
+  
 
                 Navigator.pop(context, updatedCustomer);
               },

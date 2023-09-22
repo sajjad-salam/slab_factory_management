@@ -1,6 +1,9 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+// ignore: camel_case_types
 class incoming_screen extends StatefulWidget {
   const incoming_screen({super.key});
 
@@ -8,6 +11,7 @@ class incoming_screen extends StatefulWidget {
   State<incoming_screen> createState() => _incoming_screenState();
 }
 
+// ignore: camel_case_types
 class _incoming_screenState extends State<incoming_screen> {
   int cement = 10;
   int sand = 20;
@@ -32,7 +36,7 @@ class _incoming_screenState extends State<incoming_screen> {
                   maxHeight: isKeyboardOpen ? maxHeight : contentHeight,
                 ),
                 child: AlertDialog(
-                  title: Text(
+                  title: const Text(
                     'اضافة مواد',
                     textAlign: TextAlign.right,
                     style: TextStyle(
@@ -40,7 +44,7 @@ class _incoming_screenState extends State<incoming_screen> {
                       fontSize: 22,
                     ),
                   ),
-                  contentPadding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -53,7 +57,7 @@ class _incoming_screenState extends State<incoming_screen> {
                             sand += intval;
                           });
                         },
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'الرمل',
                         ),
                       ),
@@ -65,7 +69,7 @@ class _incoming_screenState extends State<incoming_screen> {
                             aggregate += intval;
                           });
                         },
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'الحصو',
                         ),
                       ),
@@ -77,7 +81,7 @@ class _incoming_screenState extends State<incoming_screen> {
                             cement += intval;
                           });
                         },
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'الأسمنت',
                         ),
                       ),
@@ -88,7 +92,7 @@ class _incoming_screenState extends State<incoming_screen> {
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
-                      child: Text('حفض'),
+                      child: const Text('حفض'),
                     ),
                     TextButton(
                       onPressed: () {
@@ -98,7 +102,7 @@ class _incoming_screenState extends State<incoming_screen> {
                           cement = 0;
                         });
                       },
-                      child: Text('تصفير الكل'),
+                      child: const Text('تصفير الكل'),
                     ),
                   ],
                 ),
@@ -137,25 +141,25 @@ class _incoming_screenState extends State<incoming_screen> {
             elementValue: aggregate,
           ),
           // Spacer(),
-          SizedBox(
+          const SizedBox(
             height: 200,
           ),
           ElevatedButton(
             onPressed: () {
               _showSettingsDialog(context);
             },
-            child: Text(
-              'اضافة مواد',
-              style: TextStyle(
-                fontFamily: "myfont",
-                fontSize: 30,
-              ),
-            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.brown,
               shape: RoundedRectangleBorder(
                 borderRadius:
                     BorderRadius.circular(20), // Make the button rounded
+              ),
+            ),
+            child: const Text(
+              'اضافة مواد',
+              style: TextStyle(
+                fontFamily: "myfont",
+                fontSize: 30,
               ),
             ),
           ),
@@ -169,12 +173,13 @@ class ElementCard extends StatefulWidget {
   final String elementName;
   final int elementValue;
 
-  const ElementCard({
+  const ElementCard({super.key, 
     required this.elementName,
     required this.elementValue,
   });
 
   @override
+  // ignore: library_private_types_in_public_api
   _ElementCardState createState() => _ElementCardState();
 }
 
@@ -182,26 +187,26 @@ class _ElementCardState extends State<ElementCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Row(
               children: [
                 Text(
                   widget.elementValue.toString(),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontFamily: 'myfont', // Set the custom font family
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                     width: 10), // Adds spacing between the number and the name
                 Expanded(
                   child: Text(
                     widget.elementName,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
                       fontFamily: 'myfont', // Set the custom font family
                     ),
@@ -210,7 +215,7 @@ class _ElementCardState extends State<ElementCard> {
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
                 height: 10), // Adds spacing between the elements and the button
           ],
         ),

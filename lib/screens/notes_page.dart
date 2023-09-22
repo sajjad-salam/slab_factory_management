@@ -2,7 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class NotesPage extends StatefulWidget {
+  const NotesPage({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _NotesPageState createState() => _NotesPageState();
 }
 
@@ -22,7 +25,7 @@ class _NotesPageState extends State<NotesPage> {
   }
 
   MaterialStateProperty<Color?> amberColor =
-      MaterialStateProperty.all<Color?>(Color.fromARGB(255, 105, 63, 0));
+      MaterialStateProperty.all<Color?>(const Color.fromARGB(255, 105, 63, 0));
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,7 +50,7 @@ class _NotesPageState extends State<NotesPage> {
                     title: Text(
                       textAlign: TextAlign.end,
                       note,
-                      style: TextStyle(fontFamily: "myfont"),
+                      style: const TextStyle(fontFamily: "myfont"),
                     ),
                   );
                 },

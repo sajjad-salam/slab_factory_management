@@ -2,7 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ProductionPage extends StatefulWidget {
+  const ProductionPage({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _ProductionPageState createState() => _ProductionPageState();
 }
 
@@ -86,7 +89,7 @@ class _ProductionPageState extends State<ProductionPage> {
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
+            const Text(
               textAlign: TextAlign.end,
               'الأنتاخ الأسبوعي',
               style: TextStyle(
@@ -94,8 +97,8 @@ class _ProductionPageState extends State<ProductionPage> {
                   fontWeight: FontWeight.bold,
                   fontFamily: "myfont"),
             ),
-            SizedBox(height: 10),
-            Text("0"),
+            const SizedBox(height: 10),
+            const Text("0"),
             TextField(
               controller: productionController,
               onChanged: (value) {
@@ -103,19 +106,19 @@ class _ProductionPageState extends State<ProductionPage> {
                   production = value;
                 });
               },
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'تعديل الأنتاج الأسوعي',
               ),
             ),
-            SizedBox(height: 20),
-            Text(
+            const SizedBox(height: 20),
+            const Text(
               'المخزون',
               style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   fontFamily: "myfont"),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextField(
               controller: inventoryController,
               onChanged: (value) {
@@ -123,19 +126,19 @@ class _ProductionPageState extends State<ProductionPage> {
                   inventory = value;
                 });
               },
-              decoration: InputDecoration(
-                labelText: 'Enter inventory',
+              decoration: const InputDecoration(
+                labelText: 'ادخل المخزون',
               ),
             ),
-            SizedBox(height: 20),
-            Text(
+            const SizedBox(height: 20),
+            const Text(
               'الأنتاخ اليومي',
               style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   fontFamily: "myfont"),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
                 itemCount: weeklySchedule.length,
@@ -145,7 +148,7 @@ class _ProductionPageState extends State<ProductionPage> {
                   String productionNumber = scheduleEntry.split(': ')[1];
                   return ListTile(
                     title: Text(day),
-                    subtitle: Text('$productionNumber'),
+                    subtitle: Text(productionNumber),
                     onTap: () {
                       openDayPage(day);
                     },
@@ -153,7 +156,7 @@ class _ProductionPageState extends State<ProductionPage> {
                 },
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -172,6 +175,7 @@ class DayPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _DayPageState createState() => _DayPageState();
 }
 
@@ -197,7 +201,7 @@ class _DayPageState extends State<DayPage> {
         previousPageTitle: "رجوع",
         middle: Text(
           'انتاخ ${widget.day} ',
-          style: TextStyle(fontFamily: "myfont"),
+          style: const TextStyle(fontFamily: "myfont"),
         ),
       ),
       body: Padding(
@@ -205,22 +209,22 @@ class _DayPageState extends State<DayPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextField(
               controller: productionController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'ادخل كمية الأنتاج',
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 String updatedProduction = productionController.text;
                 Navigator.pop(context, updatedProduction);
               },
-              child: Text('تعديل'),
+              child: const Text('تعديل'),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
           ],
         ),
       ),
