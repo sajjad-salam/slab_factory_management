@@ -31,9 +31,19 @@ class _out_screenState extends State<out_screen> {
   void initState() {
     super.initState();
     filteredCustomers = customers;
+    gettotal_in();
     loadCustomersFromDatabase();
     loadCustomersFromStorage();
     // updateCustomer
+  }
+
+  int total_in = 0;
+  void gettotal_in() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int storedProductionTotal = prefs.getInt('total_in') ?? 0;
+    setState(() {
+      total_in = storedProductionTotal;
+    });
   }
 
   @override
@@ -321,10 +331,19 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
   late TextEditingController mastek;
   late TextEditingController flankot;
   late TextEditingController flen;
+  int total_in = 0;
+  void gettotal_in() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int storedProductionTotal = prefs.getInt('total_in') ?? 0;
+    setState(() {
+      total_in = storedProductionTotal;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+    gettotal_in();
     shtagernumber =
         TextEditingController(text: widget.customer.customerNumber.toString());
     flen = TextEditingController(text: widget.customer.flen.toString());
@@ -338,6 +357,8 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
     shtagernumber.dispose();
     super.dispose();
   }
+
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -391,30 +412,49 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                int intflen = int.parse(flen.text);
-                int intzefet = int.parse(zefet.text);
-                int intflankot = int.parse(flankot.text);
-                int intmastek = int.parse(mastek.text);
+            _isLoading
+                ? CircularProgressIndicator() // Display the loading indicator
+                : ElevatedButton(
+                    onPressed: () async {
+                      setState(() {
+                        _isLoading = true;
+                      });
+                      int intflen = int.parse(flen.text);
+                      int intzefet = int.parse(zefet.text);
+                      int intflankot = int.parse(flankot.text);
+                      int intmastek = int.parse(mastek.text);
+                      total_in -= int.tryParse(shtagernumber.text) ??
+                          widget.customer.customerNumber;
 
-                final updatedCustomer = Customer(
-                    intflen, intmastek, intflankot, intzefet,
-                    name: widget.customer.name,
-                    customerNumber: int.tryParse(shtagernumber.text) ??
-                        widget.customer.customerNumber);
+                      final firestore = FirebaseFirestore.instance;
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
 
-                Navigator.pop(context, updatedCustomer);
-              },
-              child: const Text(
-                textAlign: TextAlign.end,
-                'تحديث',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontFamily: "myfont",
-                ),
-              ),
-            ),
+                      await prefs.setInt('total_in', total_in);
+                      // Save the unaffected weekly production total in a new collection in the database
+                      await firestore.collection('total_in').doc('total').set({
+                        'productionTotal': total_in,
+                      });
+
+                      final updatedCustomer = Customer(
+                          intflen, intmastek, intflankot, intzefet,
+                          name: widget.customer.name,
+                          customerNumber: int.tryParse(shtagernumber.text) ??
+                              widget.customer.customerNumber);
+                      setState(() {
+                        _isLoading = false;
+                      });
+                      // Navigator.pop(context, updatedCustomer);
+                    },
+                    child: const Text(
+                      textAlign: TextAlign.end,
+                      'تحديث',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontFamily: "myfont",
+                      ),
+                    ),
+                  ),
           ],
         ),
       ),

@@ -2,7 +2,7 @@
 <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:label="slab_factory_management"
+        android:label="معمل شتايكر"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

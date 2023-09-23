@@ -17,9 +17,27 @@ class _ListpageState extends State<Listpage> {
   int aggregate = 0;
   @override
   void initState() {
+    gettotal_in();
     _loadCounter();
     load_number_of_out();
     // startDataUpdateTimer();
+  }
+
+  bool _isLoading = false;
+  int outtotal = 0;
+  int total_in = 0;
+  void gettotal_in() async {
+    setState(() {
+      _isLoading = true;
+    });
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int storedProductionTotal = prefs.getInt('total_in') ?? 0;
+    final int total_number_out = prefs.getInt('total_number_out') ?? 0;
+    setState(() {
+      total_in = storedProductionTotal;
+      outtotal = total_number_out;
+      _isLoading = false;
+    });
   }
 
   Future<void> _loadCounter() async {
@@ -78,74 +96,60 @@ class _ListpageState extends State<Listpage> {
           style: TextStyle(fontFamily: "myfont", fontSize: 25),
         ),
       ),
-      body: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text(
-                "المخزون الكلي مع البيع ",
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-              Text("0"),
-              Text(
-                ":الوارد الكلي ",
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-              Text(
-                "رمل",
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-              Text(
-                sand.toString(),
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-              Text(
-                "حصو",
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-              Text(
-                aggregate.toString(),
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-              Text(
-                "اسمنت",
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-              Text(
-                cement.toString(),
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-              Text(
-                "انتاخ الشهر",
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-              Text(
-                "0",
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-              Text(
-                "مبلغ العمال الكلي",
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-              Text(
-                "0",
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-              Text(
-                "كمية الصادر الكلية",
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-              Text(
-                numberOfOut.toString(),
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-            ],
-          ),
-        ],
-      ),
+      body: _isLoading
+          ? CircularProgressIndicator() // Display the loading indicator
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      "المخزون الكلي مع البيع ",
+                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(total_in.toString()),
+                    Text(
+                      ":الوارد الكلي ",
+                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      "رمل",
+                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      sand.toString(),
+                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      "حصو",
+                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      aggregate.toString(),
+                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      "اسمنت",
+                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      cement.toString(),
+                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      "كمية الصادر الكلية",
+                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      outtotal.toString(),
+                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                  ],
+                ),
+              ],
+            ),
     );
   }
 }
