@@ -33,6 +33,7 @@ class _incoming_screenState extends State<incoming_screen> {
     if (hasInternet) {
       await updateDataInDatabase();
     } else {
+      // ignore: avoid_print
       print('No internet connection available. Data update postponed.');
     }
   }
@@ -43,18 +44,22 @@ class _incoming_screenState extends State<incoming_screen> {
       if (cement == 0) {
         // Load cement only if it hasn't been initialized
         cement = prefs.getInt('cement') ?? 0;
+        // ignore: avoid_print
         print(cement);
       }
       if (sand == 0) {
         // Load sand only if it hasn't been initialized
         sand = prefs.getInt('sand') ?? 0;
+        // ignore: avoid_print
         print(sand);
       }
       if (aggregate == 0) {
         // Load aggregate only if it hasn't been initialized
         aggregate = prefs.getInt('aggregate') ?? 0;
+        // ignore: avoid_print
         print(aggregate);
       }
+      // ignore: avoid_print
       print('Cement: $cement, Sand: $sand, Aggregate: $aggregate');
     });
   }
@@ -112,11 +117,14 @@ class _incoming_screenState extends State<incoming_screen> {
         'aggregate': aggregate,
       });
 
+      // ignore: avoid_print
       print('Data stored in the database successfully!');
     } catch (e) {
+      // ignore: avoid_print
       print('Error storing data in the database: $e');
     }
 
+    // ignore: avoid_print
     print('Data updated successfully!');
     Get.snackbar("تحديث", "تم تحديث البيانات ",
         snackPosition: SnackPosition.BOTTOM);

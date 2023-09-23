@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, prefer_const_constructors, use_build_context_synchronously, non_constant_identifier_names
+
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -66,18 +68,7 @@ class _ProductionPageState extends State<ProductionPage> {
 
   // هذا المتغير هو المخزون الكلي
   int total_in = 0;
-  // void save_prod_in() async {
-  //   final firestore = FirebaseFirestore.instance;
-  //   setState(() {
-  //     total_in += unaffectedWeeklyProductionTotal;
-  //   });
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   await prefs.setInt('total_in', total_in);
-  //   // Save the unaffected weekly production total in a new collection in the database
-  //   await firestore.collection('total_in').doc('total').set({
-  //     'productionTotal': total_in,
-  //   });
-  // }
+ 
 
   Future<bool> checkInternetConnectivity() async {
     var connectivityResult = await Connectivity().checkConnectivity();
@@ -208,7 +199,6 @@ class _ProductionPageState extends State<ProductionPage> {
     });
   }
 
-  // ignore: non_constant_identifier_names
   void gettotal_in() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final int storedProductionTotal = prefs.getInt('total_in') ?? 0;

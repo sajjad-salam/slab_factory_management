@@ -1,7 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -38,7 +36,9 @@ class _out_screenState extends State<out_screen> {
     // updateCustomer
   }
 
+  // ignore: non_constant_identifier_names
   int total_in = 0;
+  // ignore: non_constant_identifier_names
   void gettotal_in() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final int storedProductionTotal = prefs.getInt('total_in') ?? 0;
@@ -82,14 +82,10 @@ class _out_screenState extends State<out_screen> {
   }
 
   Future<void> saveCustomersToStorage() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonList = customers.map((customer) => customer.toJson()).toList();
-      final jsonString = jsonEncode(jsonList);
-      await prefs.setString('customers', jsonString);
-    } catch (e) {
-      print('Error saving customers to storage: $e');
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final jsonList = customers.map((customer) => customer.toJson()).toList();
+    final jsonString = jsonEncode(jsonList);
+    await prefs.setString('customers', jsonString);
   }
 
   Future<void> loadCustomersFromStorage() async {
@@ -119,9 +115,8 @@ class _out_screenState extends State<out_screen> {
           filteredCustomers = customers;
         });
       }
-    } catch (e) {
-      print('Error loading customers from storage: $e');
-    }
+      // ignore: empty_catches
+    } catch (e) {}
   }
 
   void addCustomer(String customerName) {
@@ -153,6 +148,7 @@ class _out_screenState extends State<out_screen> {
         'customers': customers.map((customer) => customer.toJson()).toList(),
       });
     } catch (e) {
+      // ignore: avoid_print
       print('Error saving customers to database: $e');
     }
   }
@@ -183,6 +179,7 @@ class _out_screenState extends State<out_screen> {
         });
       }
     } catch (e) {
+      // ignore: avoid_print
       print('Error loading customers from database: $e');
     }
   }
@@ -269,6 +266,7 @@ class _out_screenState extends State<out_screen> {
                     alignment: Alignment.bottomCenter,
                     icon: const Icon(Icons.add_circle),
                     onPressed: () {
+                      // ignore: avoid_print
                       print(totaloutputing);
                       String customerName = addCustomerController.text;
                       if (customerName.isNotEmpty) {
@@ -332,7 +330,9 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
   late TextEditingController mastek;
   late TextEditingController flankot;
   late TextEditingController flen;
+  // ignore: non_constant_identifier_names
   int total_in = 0;
+  // ignore: non_constant_identifier_names
   void gettotal_in() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final int storedProductionTotal = prefs.getInt('total_in') ?? 0;
@@ -419,7 +419,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
             ),
             const SizedBox(height: 20),
             _isLoading
-                ? CircularProgressIndicator() // Display the loading indicator
+                ? const CircularProgressIndicator() // Display the loading indicator
                 : ElevatedButton(
                     onPressed: () async {
                       bool hasInternet = await checkInternetConnectivity();
@@ -449,7 +449,10 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                           setState(() {
                             _isLoading = false;
                           });
-                        } catch (e) {}
+                        } catch (e) {
+                          // ignore: avoid_print
+                          print(e);
+                        }
                       }
                       await prefs.setInt('total_in', total_in);
 
@@ -459,6 +462,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                           customerNumber: int.tryParse(shtagernumber.text) ??
                               widget.customer.customerNumber);
 
+                      // ignore: use_build_context_synchronously
                       Navigator.pop(context, updatedCustomer);
                     },
                     child: const Text(

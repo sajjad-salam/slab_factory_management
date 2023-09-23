@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, avoid_print, library_private_types_in_public_api, no_logic_in_create_state
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +10,6 @@ class WorkersPage extends StatefulWidget {
   const WorkersPage({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _WorkersPageState createState() => _WorkersPageState();
 }
 

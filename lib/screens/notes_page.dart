@@ -119,7 +119,7 @@ class _NotesPageState extends State<NotesPage> {
                       style: const TextStyle(fontFamily: "myfont"),
                     ),
                     leading: IconButton(
-                      icon: Icon(Icons.delete),
+                      icon: const Icon(Icons.delete),
                       onPressed: () {
                         setState(() {
                           deleteNote(index);
