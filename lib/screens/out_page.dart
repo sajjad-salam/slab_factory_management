@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -18,8 +19,8 @@ class out_screen extends StatefulWidget {
 // ignore: camel_case_types
 class _out_screenState extends State<out_screen> {
   List<Customer> customers = [
-    Customer(15, 27, 48, 18, name: "سجاد سلام", customerNumber: 200),
-    Customer(15, 27, 48, 18, name: " محمد بدر", customerNumber: 200)
+    // Customer(15, 27, 48, 18, name: "سجاد سلام", customerNumber: 200),
+    // Customer(15, 27, 48, 18, name: " محمد بدر", customerNumber: 200)
   ];
 
   List<Customer> filteredCustomers = [];
@@ -352,6 +353,11 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
     mastek = TextEditingController(text: widget.customer.mastek.toString());
   }
 
+  Future<bool> checkInternetConnectivity() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    return connectivityResult != ConnectivityResult.none;
+  }
+
   @override
   void dispose() {
     shtagernumber.dispose();
@@ -416,35 +422,44 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                 ? CircularProgressIndicator() // Display the loading indicator
                 : ElevatedButton(
                     onPressed: () async {
-                      setState(() {
-                        _isLoading = true;
-                      });
+                      bool hasInternet = await checkInternetConnectivity();
                       int intflen = int.parse(flen.text);
                       int intzefet = int.parse(zefet.text);
                       int intflankot = int.parse(flankot.text);
                       int intmastek = int.parse(mastek.text);
                       total_in -= int.tryParse(shtagernumber.text) ??
                           widget.customer.customerNumber;
-
-                      final firestore = FirebaseFirestore.instance;
                       SharedPreferences prefs =
                           await SharedPreferences.getInstance();
+                      if (hasInternet) {
+                        setState(() {
+                          _isLoading = true;
+                        });
 
+                        final firestore = FirebaseFirestore.instance;
+
+                        // Save the unaffected weekly production total in a new collection in the database
+                        await firestore
+                            .collection('total_in')
+                            .doc('total')
+                            .set({
+                          'productionTotal': total_in,
+                        });
+                        try {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        } catch (e) {}
+                      }
                       await prefs.setInt('total_in', total_in);
-                      // Save the unaffected weekly production total in a new collection in the database
-                      await firestore.collection('total_in').doc('total').set({
-                        'productionTotal': total_in,
-                      });
 
                       final updatedCustomer = Customer(
                           intflen, intmastek, intflankot, intzefet,
                           name: widget.customer.name,
                           customerNumber: int.tryParse(shtagernumber.text) ??
                               widget.customer.customerNumber);
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      // Navigator.pop(context, updatedCustomer);
+
+                      Navigator.pop(context, updatedCustomer);
                     },
                     child: const Text(
                       textAlign: TextAlign.end,

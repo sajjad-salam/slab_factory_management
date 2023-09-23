@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       defaultTransition: Transition.cupertinoDialog,
-      initialRoute: "/home",
+      initialRoute: "/login",
       getPages: [
         GetPage(
           name: "/home",
