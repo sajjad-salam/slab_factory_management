@@ -13,11 +13,6 @@ class WorkersPage extends StatefulWidget {
 }
 
 class _WorkersPageState extends State<WorkersPage> {
-  List<Worker> workers = [
-    Worker(1, name: "سجاد", orderAmount: 19),
-    Worker(2, name: "سلام", orderAmount: 20),
-    Worker(5, name: "محمد", orderAmount: 40)
-  ];
   double templatePrice = 0.0;
 
   void getTemplatePrice() async {
@@ -26,20 +21,6 @@ class _WorkersPageState extends State<WorkersPage> {
     setState(() {
       templatePrice = storedTemplatePrice;
     });
-  }
-
-  Future<int> getInventoryCount() async {
-    final firestore = FirebaseFirestore.instance;
-    final snapshot =
-        await firestore.collection('unaffected_production').doc('total').get();
-    int inventoryCount = snapshot.data()?['count'] ?? 0;
-    return inventoryCount;
-  }
-
-  void calculateTotalCost(int numberOfDays) async {
-    int inventoryCount = await getInventoryCount();
-    double totalCost = templatePrice * inventoryCount * numberOfDays;
-    // Use the totalCost as needed (e.g., display it in the UI)
   }
 
   List<Worker> filteredWorkers = [];
@@ -51,8 +32,8 @@ class _WorkersPageState extends State<WorkersPage> {
   @override
   void initState() {
     super.initState();
-    filteredWorkers = workers;
     retrieveValuesFromStorage();
+    getInventoryCount();
   }
 
   void saveValuesToStorage() async {
@@ -77,12 +58,45 @@ class _WorkersPageState extends State<WorkersPage> {
     super.dispose();
   }
 
-  void filterWorkers(String searchQuery) {
-    setState(() {
-      filteredWorkers = workers.where((worker) {
-        return worker.name.toLowerCase().contains(searchQuery.toLowerCase());
-      }).toList();
-    });
+  TextEditingController daysController = TextEditingController();
+  double totalCost = 0.0;
+  late final String temp_price;
+  late final String numberworkers;
+  int inventoryCount = 0;
+
+  Future<void> getInventoryCount() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final snapshot = await firestore
+          .collection('unaffected_production')
+          .doc('total')
+          .get();
+      inventoryCount = snapshot.data()?['productionTotal'] ?? 0;
+    } catch (e) {
+      print('Error retrieving inventory count: $e');
+    }
+  }
+
+  void calculateTotalCost() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String price = prefs.getString('price') ?? '';
+    String numberOfWorkers = prefs.getString('numberOfWorkers') ?? '';
+    int numberOfDays = int.parse(daysController.text);
+
+    try {
+      double templatePrice =
+          double.parse(price); // Add your template price retrieval logic here
+      int numberofworkers = int.parse(
+          numberOfWorkers); // Add your template price retrieval logic here
+
+      setState(() {
+        totalCost =
+            (templatePrice * inventoryCount * numberOfDays) / numberofworkers;
+      });
+      print(totalCost);
+    } catch (e) {
+      Get.snackbar("خطأ", "$e");
+    }
   }
 
   @override
@@ -97,42 +111,6 @@ class _WorkersPageState extends State<WorkersPage> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: searchController,
-              onChanged: (value) {
-                filterWorkers(value);
-              },
-              decoration: const InputDecoration(
-                labelText: 'Search',
-                prefixIcon: Icon(Icons.search),
-              ),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: filteredWorkers.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(filteredWorkers[index].name),
-                  subtitle: Text(
-                      'Order Amount: ${filteredWorkers[index].orderAmount}'),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => WorkerDetailsPage(
-                            numberofworkers: numberofworkers.text,
-                            worker: filteredWorkers[index],
-                            temp_price: priceController.text),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
           TextField(
             textInputAction: TextInputAction.next,
             keyboardType: TextInputType.number,
@@ -153,6 +131,31 @@ class _WorkersPageState extends State<WorkersPage> {
               labelText: 'ادخل عدد العمال',
               prefixIcon: Icon(Icons.price_check),
             ),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: daysController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'عدد الأيام',
+            ),
+            style: const TextStyle(fontFamily: "myfont", fontSize: 25),
+          ),
+          const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () {
+              getInventoryCount();
+              calculateTotalCost();
+            },
+            child: const Text(
+              'حساب',
+              style: TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'الحساب الأجمالي: $totalCost',
+            style: const TextStyle(fontFamily: "myfont", fontSize: 25),
           ),
         ],
       ),

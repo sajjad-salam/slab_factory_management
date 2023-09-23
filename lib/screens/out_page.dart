@@ -33,6 +33,7 @@ class _out_screenState extends State<out_screen> {
     filteredCustomers = customers;
     loadCustomersFromDatabase();
     loadCustomersFromStorage();
+    // updateCustomer
   }
 
   @override
@@ -41,6 +42,8 @@ class _out_screenState extends State<out_screen> {
     addCustomerController.dispose();
     super.dispose();
   }
+
+  int totaloutputing = 0;
 
   void filterCustomers(String searchQuery) {
     setState(() {
@@ -51,6 +54,11 @@ class _out_screenState extends State<out_screen> {
   }
 
   Future<void> updateCustomer(Customer updatedCustomer) async {
+    for (Customer customer in customers) {
+      // int productionNumber = int.tryParse(customer.customerNumber) ?? 0;
+      totaloutputing += customer.customerNumber;
+    }
+
     final customerIndex = customers
         .indexWhere((customer) => customer.name == updatedCustomer.name);
     if (customerIndex != -1) {
@@ -74,6 +82,13 @@ class _out_screenState extends State<out_screen> {
   }
 
   Future<void> loadCustomersFromStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    for (Customer customer in customers) {
+      // int productionNumber = int.tryParse(customer.customerNumber) ?? 0;
+      totaloutputing += customer.customerNumber;
+      await prefs.setInt('total_number_out', totaloutputing);
+    }
     try {
       final prefs = await SharedPreferences.getInstance();
       final jsonString = prefs.getString('customers');
@@ -243,6 +258,7 @@ class _out_screenState extends State<out_screen> {
                     alignment: Alignment.bottomCenter,
                     icon: const Icon(Icons.add_circle),
                     onPressed: () {
+                      print(totaloutputing);
                       String customerName = addCustomerController.text;
                       if (customerName.isNotEmpty) {
                         addCustomer(customerName);

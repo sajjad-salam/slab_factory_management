@@ -27,6 +27,7 @@ class _ProductionPageState extends State<ProductionPage> {
     'الجمعة: 70',
     'السبت: 60',
   ];
+  bool _isLoading = false;
 
   TextEditingController productionController = TextEditingController();
 
@@ -45,6 +46,7 @@ class _ProductionPageState extends State<ProductionPage> {
     loadWeeklyDataFromStorage();
     startDataUpdateTimer();
     getUnaffectedProductionTotal();
+    gettotal_in();
   }
 
   void startDataUpdateTimer() {
@@ -62,6 +64,21 @@ class _ProductionPageState extends State<ProductionPage> {
     }
   }
 
+  // هذا المتغير هو المخزون الكلي
+  int total_in = 0;
+  // void save_prod_in() async {
+  //   final firestore = FirebaseFirestore.instance;
+  //   setState(() {
+  //     total_in += unaffectedWeeklyProductionTotal;
+  //   });
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   await prefs.setInt('total_in', total_in);
+  //   // Save the unaffected weekly production total in a new collection in the database
+  //   await firestore.collection('total_in').doc('total').set({
+  //     'productionTotal': total_in,
+  //   });
+  // }
+
   Future<bool> checkInternetConnectivity() async {
     var connectivityResult = await Connectivity().checkConnectivity();
     return connectivityResult != ConnectivityResult.none;
@@ -70,6 +87,7 @@ class _ProductionPageState extends State<ProductionPage> {
   int weeklyProductionTotal = 0;
 
   int totalProduction = 0;
+
   void updateWeeklyProduction() {
     for (String scheduleEntry in weeklySchedule) {
       int productionNumber = int.tryParse(scheduleEntry.split(': ')[1]) ?? 0;
@@ -119,6 +137,9 @@ class _ProductionPageState extends State<ProductionPage> {
 
   Future<void> saveWeeklyProductionToDatabase() async {
     try {
+    setState(() {
+      _isLoading = true;
+    });
       final firestore = FirebaseFirestore.instance;
       final collectionRef = firestore.collection('weekly_production');
 
@@ -170,6 +191,9 @@ class _ProductionPageState extends State<ProductionPage> {
       await firestore.collection('unaffected_production').doc('total').set({
         'productionTotal': unaffectedWeeklyProductionTotal,
       });
+      setState(() {
+        _isLoading = false;
+      });
     } catch (e) {
       print('Error saving weekly production to the database: $e');
     }
@@ -181,6 +205,15 @@ class _ProductionPageState extends State<ProductionPage> {
         prefs.getInt('unaffectedProductionTotal') ?? 0;
     setState(() {
       unaffectedWeeklyProductionTotal = storedProductionTotal;
+    });
+  }
+
+  // ignore: non_constant_identifier_names
+  void gettotal_in() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int storedProductionTotal = prefs.getInt('total_in') ?? 0;
+    setState(() {
+      total_in = storedProductionTotal;
     });
   }
 
@@ -241,6 +274,47 @@ class _ProductionPageState extends State<ProductionPage> {
     }
   }
 
+  void _showWarningDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('تحذير'),
+          content: Text('هل تريد تصفير المخزون ؟'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Handle 'No' option
+                Navigator.of(context).pop();
+              },
+              child: Text('لا'),
+            ),
+            TextButton(
+              onPressed: () async {
+                setState(() {
+                  total_in = 0;
+                });
+                final firestore = FirebaseFirestore.instance;
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+
+                await prefs.setInt('total_in', total_in);
+                // Save the unaffected weekly production total in a new collection in the database
+                await firestore.collection('total_in').doc('total').set({
+                  'productionTotal': total_in,
+                });
+                // Handle 'Yes' option
+                // Call your function or perform the desired action here
+                Navigator.of(context).pop();
+                // Add your logic here
+              },
+              child: Text('نعم'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -268,15 +342,15 @@ class _ProductionPageState extends State<ProductionPage> {
             const SizedBox(height: 10),
             Text(unaffectedWeeklyProductionTotal.toString()),
             const SizedBox(height: 20),
-            // const Text(
-            //   'المخزون',
-            //   style: TextStyle(
-            //       fontSize: 20,
-            //       fontWeight: FontWeight.bold,
-            //       fontFamily: "myfont"),
-            // ),
-            // const SizedBox(height: 10),
-            // Text(unaffectedWeeklyProductionTotal.toString()),
+            const Text(
+              'المخزون',
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: "myfont"),
+            ),
+            const SizedBox(height: 10),
+            Text(total_in.toString()),
             const SizedBox(height: 20),
             const Text(
               'الأنتاخ اليومي',
@@ -304,22 +378,33 @@ class _ProductionPageState extends State<ProductionPage> {
               ),
             ),
             const SizedBox(height: 20),
+            _isLoading
+                ? CircularProgressIndicator() // Display the loading indicator
+                : ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        // _isLoading = true;
+                        weeklyProductionTotal = 0;
+                        for (int i = 0; i < weeklySchedule.length; i++) {
+                          final day = weeklySchedule[i].split(': ')[0];
+                          weeklySchedule[i] =
+                              '$day: 0'; // Set the day number to 0
+                        }
+                        calculateWeeklyProduction(); // Recalculate the weekly production total
+                        production =
+                            weeklyProductionTotal.toString(); // Update the UI
+                      });
+                      saveWeeklyScheduleToStorage();
+                      saveWeeklyProductionToDatabase();
+                      print(unaffectedWeeklyProductionTotal);
+                    },
+                    child: Text('تصفير الأسبوع'),
+                  ),
             ElevatedButton(
               onPressed: () {
-                setState(() {
-                  for (int i = 0; i < weeklySchedule.length; i++) {
-                    final day = weeklySchedule[i].split(': ')[0];
-                    weeklySchedule[i] = '$day: 0'; // Set the day number to 0
-                  }
-                  calculateWeeklyProduction(); // Recalculate the weekly production total
-                  production =
-                      weeklyProductionTotal.toString(); // Update the UI
-                });
-                saveWeeklyScheduleToStorage();
-                saveWeeklyProductionToDatabase();
-                print(unaffectedWeeklyProductionTotal);
+                _showWarningDialog(context);
               },
-              child: Text('تصفير الكل'),
+              child: Text('تصفير المخزون'),
             ),
           ],
         ),
@@ -376,6 +461,8 @@ class _DayPageState extends State<DayPage> {
     loadWeeklyDataFromStorage();
     startDataUpdateTimer();
     getUnaffectedProductionTotal();
+    // save_prod_in();
+    gettotal_in();
   }
 
   void startDataUpdateTimer() {
@@ -399,6 +486,21 @@ class _DayPageState extends State<DayPage> {
   }
 
   int weeklyProductionTotal = 0;
+  // هذا المتغير هو المخزون الكلي
+  int total_in = 0;
+  // void save_prod_in() async {
+  //   final firestore = FirebaseFirestore.instance;
+  //   setState(() {
+  //     total_in += unaffectedWeeklyProductionTotal;
+  //   });
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   await prefs.setInt('total_in', total_in);
+  //   // Save the unaffected weekly production total in a new collection in the database
+  //   await firestore.collection('total_in').doc('total').set({
+  //     'productionTotal': unaffectedWeeklyProductionTotal,
+  //   });
+  //   print(total_in);
+  // }
 
   int totalProduction = 0;
   void updateWeeklyProduction() {
@@ -512,6 +614,14 @@ class _DayPageState extends State<DayPage> {
         prefs.getInt('unaffectedProductionTotal') ?? 0;
     setState(() {
       unaffectedWeeklyProductionTotal = storedProductionTotal;
+    });
+  }
+
+  void gettotal_in() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int storedProductionTotal = prefs.getInt('total_in') ?? 0;
+    setState(() {
+      total_in = storedProductionTotal;
     });
   }
 
@@ -597,12 +707,26 @@ class _DayPageState extends State<DayPage> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 updateDataAndCheckInternet();
                 saveWeeklyProductionToDatabase();
                 saveWeeklyScheduleToStorage();
-                String updatedProduction = productionController.text;
-                Navigator.pop(context, updatedProduction);
+                // save_prod_in();
+                setState(() {
+                  String updatedProduction = productionController.text;
+                  Navigator.pop(context, updatedProduction);
+                  print(updatedProduction);
+                  total_in += int.parse(updatedProduction);
+                });
+                final firestore = FirebaseFirestore.instance;
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+
+                await prefs.setInt('total_in', total_in);
+                // Save the unaffected weekly production total in a new collection in the database
+                await firestore.collection('total_in').doc('total').set({
+                  'productionTotal': total_in,
+                });
+                print(total_in);
               },
               child: const Text('تعديل'),
             ),
