@@ -107,7 +107,7 @@ class _WorkersPageState extends State<WorkersPage> {
         previousPageTitle: "رجوع",
         middle: Text(
           "صفحة العمال ",
-          style: TextStyle(fontFamily: "myfont", fontSize: 25),
+          style: TextStyle(fontFamily: "myfont", fontSize: 20),
         ),
       ),
       body: Column(
@@ -121,6 +121,7 @@ class _WorkersPageState extends State<WorkersPage> {
               labelText: 'ادخل سعر القالب',
               prefixIcon: Icon(Icons.price_check),
             ),
+            style: const TextStyle(fontFamily: "myfont", fontSize: 20),
           ),
           TextField(
             keyboardType: TextInputType.number,
@@ -128,6 +129,7 @@ class _WorkersPageState extends State<WorkersPage> {
             onChanged: (value) {
               saveValuesToStorage();
             },
+            style: const TextStyle(fontFamily: "myfont", fontSize: 20),
             decoration: const InputDecoration(
               labelText: 'ادخل عدد العمال',
               prefixIcon: Icon(Icons.price_check),
@@ -138,9 +140,10 @@ class _WorkersPageState extends State<WorkersPage> {
             controller: daysController,
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.calendar_month),
               labelText: 'عدد الأيام',
             ),
-            style: const TextStyle(fontFamily: "myfont", fontSize: 25),
+            style: const TextStyle(fontFamily: "myfont", fontSize: 20),
           ),
           const SizedBox(height: 10),
           ElevatedButton(

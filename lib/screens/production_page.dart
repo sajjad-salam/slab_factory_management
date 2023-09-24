@@ -49,6 +49,15 @@ class _ProductionPageState extends State<ProductionPage> {
     startDataUpdateTimer();
     getUnaffectedProductionTotal();
     gettotal_in();
+    Map<String, List<Note>> dailyNotes = {
+      'الأحد': [],
+      'الأثنين': [],
+      'الثلاثاء': [],
+      'الأربعاء': [],
+      'الخميس': [],
+      'الجمعة': [],
+      'السبت': [],
+    };
   }
 
   void startDataUpdateTimer() {
@@ -68,7 +77,6 @@ class _ProductionPageState extends State<ProductionPage> {
 
   // هذا المتغير هو المخزون الكلي
   int total_in = 0;
- 
 
   Future<bool> checkInternetConnectivity() async {
     var connectivityResult = await Connectivity().checkConnectivity();
@@ -92,9 +100,11 @@ class _ProductionPageState extends State<ProductionPage> {
 
   void openDayPage(String day) {
     String productionNumber = '';
+    int Daynumber = 0;
     for (String scheduleEntry in weeklySchedule) {
       if (scheduleEntry.startsWith(day)) {
         productionNumber = scheduleEntry.split(': ')[1];
+        // Daynumber
         break;
       }
     }
@@ -117,6 +127,7 @@ class _ProductionPageState extends State<ProductionPage> {
               break;
             }
           }
+          // print(day);
 
           updateWeeklyProduction(); // Update the weekly production when a day's production is updated
           saveWeeklyScheduleToStorage(); // Save the updated weekly schedule to storage
@@ -128,9 +139,9 @@ class _ProductionPageState extends State<ProductionPage> {
 
   Future<void> saveWeeklyProductionToDatabase() async {
     try {
-    setState(() {
-      _isLoading = true;
-    });
+      setState(() {
+        _isLoading = true;
+      });
       final firestore = FirebaseFirestore.instance;
       final collectionRef = firestore.collection('weekly_production');
 
@@ -358,8 +369,22 @@ class _ProductionPageState extends State<ProductionPage> {
                   String day = scheduleEntry.split(': ')[0];
                   String productionNumber = scheduleEntry.split(': ')[1];
                   return ListTile(
-                    title: Text(day),
-                    subtitle: Text(productionNumber),
+                    title: Text(
+                      textAlign: TextAlign.end,
+                      day,
+                      style: TextStyle(
+                        fontFamily: "myfont",
+                        fontSize: 20,
+                      ),
+                    ),
+                    subtitle: Text(
+                      productionNumber,
+                      textAlign: TextAlign.end,
+                      style: TextStyle(
+                        fontFamily: "myfont",
+                        fontSize: 20,
+                      ),
+                    ),
                     onTap: () {
                       openDayPage(day);
                     },
@@ -388,19 +413,38 @@ class _ProductionPageState extends State<ProductionPage> {
                       saveWeeklyProductionToDatabase();
                       print(unaffectedWeeklyProductionTotal);
                     },
-                    child: Text('تصفير الأسبوع'),
+                    child: Text(
+                      'تصفير الأسبوع',
+                      style: TextStyle(
+                        fontFamily: "myfont",
+                        fontSize: 20,
+                      ),
+                    ),
                   ),
             ElevatedButton(
               onPressed: () {
                 _showWarningDialog(context);
               },
-              child: Text('تصفير المخزون'),
+              child: Text(
+                'تصفير المخزون',
+                style: TextStyle(
+                  fontFamily: "myfont",
+                  fontSize: 20,
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class Note {
+  final String title;
+  final String content;
+
+  Note({required this.title, required this.content});
 }
 
 class DayPage extends StatefulWidget {
@@ -434,8 +478,6 @@ class _DayPageState extends State<DayPage> {
     'السبت: 60',
   ];
 
-  // TextEditingController productionController = TextEditingController();
-
   String production = '';
   String inventory = '';
 
@@ -445,14 +487,231 @@ class _DayPageState extends State<DayPage> {
     super.dispose();
   }
 
+  TextEditingController noteController = TextEditingController();
+  void addNote() async {
+    String newNoteTitle = noteController.text;
+    String newNoteContent = ''; // Add content here if needed
+    if (newNoteTitle.isNotEmpty) {
+      setState(() {
+        notes.add(Note(title: newNoteTitle, content: newNoteContent));
+        noteController.clear();
+      });
+      await saveNotes(notes.cast<Note>());
+    }
+  }
+
+  List<String>? notesJson = [];
+  MaterialStateProperty<Color?> amberColor =
+      MaterialStateProperty.all<Color?>(const Color.fromARGB(255, 105, 63, 0));
+  Future<List<Note>> loadNotes() async {
+    switch (widget.day) {
+      case "الأحد":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        notesJson = prefs.getStringList('notes_sun');
+        break;
+      case "الأثنين":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        notesJson = prefs.getStringList('notes_mon');
+        break;
+      case "الثلاثاء":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        notesJson = prefs.getStringList('notes_tue');
+        break;
+      case "الأربعاء":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        notesJson = prefs.getStringList('notes_wed');
+        break;
+      case "الخميس":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        notesJson = prefs.getStringList('notes_thu');
+        break;
+      case "الجمعة":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        notesJson = prefs.getStringList('notes_fri');
+        break;
+      case "السبت":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        notesJson = prefs.getStringList('notes_sat');
+        break;
+      default:
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        notesJson = prefs.getStringList('notes');
+    }
+
+    return notesJson != null
+        ? notesJson!.map((noteJson) => noteFromJson(noteJson)).toList()
+        : [];
+  }
+
+  void deleteNote(int index) {
+    setState(() {
+      Note deletedNote = notes.removeAt(index);
+      deleteNoteFromStorage(deletedNote);
+    });
+  }
+
+  List<Note> notes = [];
+
+  void deleteNoteFromStorage(Note note) async {
+    switch (widget.day) {
+      case "الأحد":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String>? storedNotes = prefs.getStringList('notes_sun');
+
+        if (storedNotes != null) {
+          String noteJson = noteToJson(note);
+          storedNotes.remove(noteJson);
+          await prefs.setStringList('notes_sun', storedNotes);
+        }
+        break;
+      case "الأثنين":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String>? storedNotes = prefs.getStringList('notes_mon');
+
+        if (storedNotes != null) {
+          String noteJson = noteToJson(note);
+          storedNotes.remove(noteJson);
+          await prefs.setStringList('notes_mon', storedNotes);
+        }
+        break;
+      case "الثلاثاء":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String>? storedNotes = prefs.getStringList('notes_tue');
+
+        if (storedNotes != null) {
+          String noteJson = noteToJson(note);
+          storedNotes.remove(noteJson);
+          await prefs.setStringList('notes_tue', storedNotes);
+        }
+        break;
+      case "الأربعاء":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String>? storedNotes = prefs.getStringList('notes_wed');
+
+        if (storedNotes != null) {
+          String noteJson = noteToJson(note);
+          storedNotes.remove(noteJson);
+          await prefs.setStringList('notes_wed', storedNotes);
+        }
+        break;
+      case "الخميس":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String>? storedNotes = prefs.getStringList('notes_thu');
+
+        if (storedNotes != null) {
+          String noteJson = noteToJson(note);
+          storedNotes.remove(noteJson);
+          await prefs.setStringList('notes_thu', storedNotes);
+        }
+        break;
+      case "الجمعة":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String>? storedNotes = prefs.getStringList('notes_fri');
+
+        if (storedNotes != null) {
+          String noteJson = noteToJson(note);
+          storedNotes.remove(noteJson);
+          await prefs.setStringList('notes_fri', storedNotes);
+        }
+        break;
+      case "السبت":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String>? storedNotes = prefs.getStringList('notes_fri');
+
+        if (storedNotes != null) {
+          String noteJson = noteToJson(note);
+          storedNotes.remove(noteJson);
+          await prefs.setStringList('notes_fri', storedNotes);
+        }
+        break;
+      default:
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String>? storedNotes = prefs.getStringList('notes');
+
+        if (storedNotes != null) {
+          String noteJson = noteToJson(note);
+          storedNotes.remove(noteJson);
+          await prefs.setStringList('notes', storedNotes);
+        }
+    }
+  }
+
+  Future<void> saveNotes(List<Note> notes) async {
+    switch (widget.day) {
+      case "الأحد":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String> notesJson = notes.map((note) => noteToJson(note)).toList();
+        await prefs.setStringList('notes_sun', notesJson);
+
+        break;
+      case "الأثنين":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String> notesJson = notes.map((note) => noteToJson(note)).toList();
+        await prefs.setStringList('notes_mon', notesJson);
+
+        break;
+      case "الثلاثاء":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String> notesJson = notes.map((note) => noteToJson(note)).toList();
+        await prefs.setStringList('notes_tue', notesJson);
+
+        break;
+      case "الأربعاء":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String> notesJson = notes.map((note) => noteToJson(note)).toList();
+        await prefs.setStringList('notes_wed', notesJson);
+
+        break;
+      case "الخميس":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String> notesJson = notes.map((note) => noteToJson(note)).toList();
+        await prefs.setStringList('notes_thu', notesJson);
+
+        break;
+      case "الجمعة":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String> notesJson = notes.map((note) => noteToJson(note)).toList();
+        await prefs.setStringList('notes_fri', notesJson);
+
+        break;
+      case "السبت":
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String> notesJson = notes.map((note) => noteToJson(note)).toList();
+        await prefs.setStringList('notes_sat', notesJson);
+
+        break;
+      default:
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        List<String> notesJson = notes.map((note) => noteToJson(note)).toList();
+        await prefs.setStringList('notes', notesJson);
+    }
+  }
+
+  String noteToJson(Note note) {
+    return jsonEncode({'title': note.title, 'content': note.content});
+  }
+
+  Note noteFromJson(String noteJson) {
+    Map<String, dynamic> json = jsonDecode(noteJson);
+    return Note(
+      title: json['title'],
+      content: json['content'],
+    );
+  }
+
   @override
   void initState() {
     super.initState();
+
     loadWeeklyDataFromStorage();
     startDataUpdateTimer();
     getUnaffectedProductionTotal();
-    // save_prod_in();
     gettotal_in();
+    loadNotes().then((loadedNotes) {
+      setState(() {
+        notes = loadedNotes;
+      });
+    });
   }
 
   void startDataUpdateTimer() {
@@ -478,19 +737,6 @@ class _DayPageState extends State<DayPage> {
   int weeklyProductionTotal = 0;
   // هذا المتغير هو المخزون الكلي
   int total_in = 0;
-  // void save_prod_in() async {
-  //   final firestore = FirebaseFirestore.instance;
-  //   setState(() {
-  //     total_in += unaffectedWeeklyProductionTotal;
-  //   });
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   await prefs.setInt('total_in', total_in);
-  //   // Save the unaffected weekly production total in a new collection in the database
-  //   await firestore.collection('total_in').doc('total').set({
-  //     'productionTotal': unaffectedWeeklyProductionTotal,
-  //   });
-  //   print(total_in);
-  // }
 
   int totalProduction = 0;
   void updateWeeklyProduction() {
@@ -688,16 +934,32 @@ class _DayPageState extends State<DayPage> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             const SizedBox(height: 10),
-            TextField(
-              keyboardType: TextInputType.number,
+            CupertinoTextField(
+              onEditingComplete: () {
+                addNote();
+              },
+              decoration: BoxDecoration(
+                // color: CupertinoColors.extraLightBackgroundGray,
+                borderRadius: BorderRadius.circular(10),
+              ),
               controller: productionController,
-              decoration: const InputDecoration(
-                labelText: 'ادخل كمية الأنتاج',
+              autocorrect: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (value) {
+                addNote();
+              },
+              placeholder: "....ادخل كمية الأنتاخ هنا",
+              // maxLength: 10,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontFamily: "myfont",
+                color: Color.fromARGB(255, 0, 0, 0), // Set the color to white
               ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
+                // print(widget.day);
                 updateDataAndCheckInternet();
                 saveWeeklyProductionToDatabase();
                 saveWeeklyScheduleToStorage();
@@ -718,9 +980,58 @@ class _DayPageState extends State<DayPage> {
                 });
                 print(total_in);
               },
-              child: const Text('تعديل'),
+              child: const Text(
+                'تعديل',
+                style: TextStyle(fontFamily: "myfont", fontSize: 18),
+              ),
             ),
             const SizedBox(height: 10),
+            Expanded(
+              child: ListView.builder(
+                itemCount: notes.length,
+                itemBuilder: (context, index) {
+                  Note note = notes[index];
+                  return ListTile(
+                    title: Text(
+                      textAlign: TextAlign.end,
+                      note.title,
+                      style: const TextStyle(fontFamily: "myfont"),
+                    ),
+                    leading: IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        setState(() {
+                          deleteNote(index);
+                        });
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+            CupertinoTextField(
+              onEditingComplete: () {
+                addNote();
+              },
+              decoration: BoxDecoration(
+                // color: CupertinoColors.extraLightBackgroundGray,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              controller: noteController,
+              autocorrect: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (value) {
+                addNote();
+              },
+              placeholder: ".... ادخل اسماء العمال هنا ",
+              // maxLength: 10,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontFamily: "myfont",
+                color: Color.fromARGB(255, 0, 0, 0), // Set the color to white
+              ),
+            ),
           ],
         ),
       ),
