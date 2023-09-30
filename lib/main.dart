@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       defaultTransition: Transition.cupertinoDialog,
-      initialRoute: "/login",
+      initialRoute: "/home",
       getPages: [
         GetPage(
           name: "/home",
