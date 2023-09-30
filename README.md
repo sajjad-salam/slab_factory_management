@@ -7,7 +7,7 @@ A new Flutter project.
 
 ## screnshot
 
-<img src="/screenshot/screen.jpg" alt="">
+<img src="/screenshot/Screenshot_٢٠٢٣٠٩٢٣-١٥٢٩١٨.jpg" alt="">
 <img src="/screenshot/screen.jpg" alt="">
 <img src="/screenshot/screen2.jpg" alt="">
 <img src="/screenshot/Screenshot_٢٠٢٣٠٩٢٣-١٥٢٩٠٥.jpg" alt="">
