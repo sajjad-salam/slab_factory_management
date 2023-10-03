@@ -1,18 +1,17 @@
 // ignore_for_file: avoid_print
 
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:slab_factory_management/screens/Incoming_page.dart';
 import 'package:slab_factory_management/screens/home/home.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:slab_factory_management/screens/production_page.dart';
-
 import 'screens/login_page.dart';
 import 'screens/notes_page.dart';
 import 'screens/out_page.dart';
 import 'screens/report_page.dart';
 import 'screens/worker_page.dart';
+import 'screens/worker_scren.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +28,7 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       defaultTransition: Transition.cupertinoDialog,
-      initialRoute: "/home",
+      initialRoute: "/Production",
       getPages: [
         GetPage(
           name: "/home",
@@ -62,6 +61,10 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: "/report",
           page: () => const report(),
+        ),
+        GetPage(
+          name: "/work",
+          page: () => work(),
         ),
       ],
     );
