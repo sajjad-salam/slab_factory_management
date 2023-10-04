@@ -2,16 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:slab_factory_management/screens/Incoming_page.dart';
+import 'package:slab_factory_management/screens/incoming/Incoming_page.dart';
 import 'package:slab_factory_management/screens/home/home.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:slab_factory_management/screens/production/production_page.dart';
-import 'screens/login_page.dart';
-import 'screens/notes_page.dart';
-import 'screens/out_page.dart';
-import 'screens/report_page.dart';
+import 'screens/login/login_page.dart';
+import 'screens/notes/notes_page.dart';
+import 'screens/outputing/out_page.dart';
+import 'screens/report/report_page.dart';
 import 'screens/worker_page.dart';
-import 'screens/worker_scren.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,10 +60,7 @@ class MyApp extends StatelessWidget {
           name: "/report",
           page: () => const report(),
         ),
-        GetPage(
-          name: "/work",
-          page: () => work(),
-        ),
+     
       ],
     );
   }

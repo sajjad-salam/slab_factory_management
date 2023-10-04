@@ -36,9 +36,8 @@ class mybutton extends StatelessWidget {
                   // فقط قم بأزالة التعليق عن السطر التالي
                   try {
                     Get.toNamed(rout);
-                                    // ignore: empty_catches
-                                    } catch (e) {
-                  }
+                    // ignore: empty_catches
+                  } catch (e) {}
                 },
                 child: Stack(
                   alignment: Alignment.bottomCenter,

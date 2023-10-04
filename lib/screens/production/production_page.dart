@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:slab_factory_management/screens/worker_scren.dart';
 
 import 'day_page.dart';
 
@@ -54,21 +53,7 @@ List<Worker> workers = [
   Worker(name: 'محمد فهد', laborCost: 0),
   // Add more workers as needed
 ];
-Future<void> saveWorkersLocally(List<Worker> workers) async {
-  final prefs = await SharedPreferences.getInstance();
-  final encodedWorkers = workers.map((worker) => worker.toJson()).toList();
-  await prefs.setStringList('workers', encodedWorkers.cast<String>());
-}
 
-// Function to load workers from local storage
-Future<List<Worker>> loadWorkersLocally() async {
-  final prefs = await SharedPreferences.getInstance();
-  final encodedWorkers = prefs.getStringList('workers') ?? [];
-  return encodedWorkers
-      .map((encodedWorker) =>
-          Worker.fromJson(encodedWorker as Map<String, dynamic>))
-      .toList();
-}
 
 class ProductionPage extends StatefulWidget {
   const ProductionPage({super.key});
@@ -100,7 +85,22 @@ class _ProductionPageState extends State<ProductionPage> {
     'الجمعة: 70',
     'السبت: 60',
   ];
+Future<void> saveWorkersLocally(List<Worker> workers) async {
+  final prefs = await SharedPreferences.getInstance();
+  final encodedWorkers = workers.map((worker) => worker.toJson()).toList();
+  await prefs.setStringList('workers', encodedWorkers.cast<String>());
+}
 
+// Function to load workers from local storage
+Future<List<Worker>> loadWorkersLocally() async {
+  
+  final prefs = await SharedPreferences.getInstance();
+  final encodedWorkers = prefs.getStringList('workers') ?? [];
+  return encodedWorkers
+      .map((encodedWorker) =>
+          Worker.fromJson(encodedWorker as Map<String, dynamic>))
+      .toList();
+}
   @override
   void dispose() {
     productionController.dispose();

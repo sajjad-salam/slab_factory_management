@@ -61,6 +61,32 @@ class _DayPageState extends State<DayPage> {
     getUnaffectedProductionTotal();
     gettotal_in();
     loadWorkersLocally();
+    loadWorkersFromFirestore();
+  }
+
+  Future<void> saveWorkersLocally(List<Worker> workers) async {
+    final prefs = await SharedPreferences.getInstance();
+    final encodedWorkers = workers.map((worker) => worker.toJson()).toList();
+    await prefs.setStringList('workers', encodedWorkers.cast<String>());
+  }
+
+  Future<List<Worker>> loadWorkersLocally() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    final prefs = await SharedPreferences.getInstance();
+    final encodedWorkers = prefs.getStringList('workers') ?? [];
+    setState(
+      () {
+        _isLoading = false;
+      },
+    );
+    return encodedWorkers
+        .map((encodedWorker) =>
+            Worker.fromJson(encodedWorker as Map<String, dynamic>))
+        .toList();
   }
 
   void updateDataAndCheckInternet() async {
@@ -91,6 +117,32 @@ class _DayPageState extends State<DayPage> {
       totalWeeklyProduction = totalProduction;
       production = totalWeeklyProduction.toString();
     });
+  }
+
+  Future<void> loadWorkersFromFirestore() async {
+    setState(() {
+      // _isLoading = true;
+    });
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      CollectionReference workersCollection = firestore.collection('workers');
+      QuerySnapshot querySnapshot = await workersCollection.get();
+      List<Worker> loadedWorkers = [];
+      querySnapshot.docs.forEach((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        loadedWorkers.add(Worker(
+          name: data['name'],
+          laborCost: data['laborCost'].toDouble(),
+        ));
+      });
+
+      setState(() {
+        workers = loadedWorkers;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading data from Firestore: $e');
+    }
   }
 
   void openDayPage(String day) {
@@ -315,7 +367,7 @@ class _DayPageState extends State<DayPage> {
                   selectedWorker = worker;
                   productionData.selectedWorkers =
                       List.from(productionData.selectedWorkers)..add(worker!);
-                  selectedWorker!.laborCost =
+                  selectedWorker!.laborCost +=
                       double.tryParse(productionController.text) ?? 0.0;
                 });
               },
@@ -328,9 +380,10 @@ class _DayPageState extends State<DayPage> {
             ),
             ElevatedButton(
               onPressed: () {
-                print(selectedWorker?.laborCost ?? 0);
-                print(selectedDay);
-                print(selectedWorker?.name ?? "null");
+                print(workers.toList());
+                // print(selectedWorker?.laborCost ?? 0);
+                // print(selectedDay);
+                // print(selectedWorker?.name ?? "null");
               },
               child: Text('print'),
             ),
@@ -374,6 +427,7 @@ class _DayPageState extends State<DayPage> {
                       });
                       SharedPreferences prefs =
                           await SharedPreferences.getInstance();
+                      saveWorkersLocally(workers);
 
                       await prefs.setInt('total_in', total_in);
                       // Save the unaffected weekly production total in a new collection in the database
