@@ -165,26 +165,6 @@ class _ProductionPageState extends State<ProductionPag> {
         padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
-            DropdownButton<String>(
-              value: selectedDay,
-              onChanged: (value) {
-                setState(() {
-                  selectedDay = value!;
-                  productionData = ProductionModel(
-                    day: selectedDay,
-                    productionQuantity: productionQuantity,
-                    selectedWorkers: productionData.selectedWorkers,
-                  );
-                });
-              },
-              items: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-                  .map((day) {
-                return DropdownMenuItem<String>(
-                  value: day,
-                  child: Text(day),
-                );
-              }).toList(),
-            ),
             TextField(
               controller: productionQuantit,
               keyboardType: TextInputType.number,

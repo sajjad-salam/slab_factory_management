@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:slab_factory_management/screens/Incoming_page.dart';
 import 'package:slab_factory_management/screens/home/home.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:slab_factory_management/screens/production_page.dart';
+import 'package:slab_factory_management/screens/production/production_page.dart';
 import 'screens/login_page.dart';
 import 'screens/notes_page.dart';
 import 'screens/out_page.dart';
@@ -24,7 +24,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      /*      debugShowCheckedModeBanner: false,*/
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       defaultTransition: Transition.cupertinoDialog,
