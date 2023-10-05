@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:slab_factory_management/screens/incoming/Incoming_page.dart';
@@ -26,7 +24,7 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       defaultTransition: Transition.cupertinoDialog,
-      initialRoute: "/Production",
+      initialRoute: "/home",
       getPages: [
         GetPage(
           name: "/home",
@@ -60,7 +58,6 @@ class MyApp extends StatelessWidget {
           name: "/report",
           page: () => const report(),
         ),
-     
       ],
     );
   }

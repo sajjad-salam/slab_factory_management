@@ -42,6 +42,9 @@ class Worker {
       laborCost: json['laborCost'].toDouble(),
     );
   }
+  void incrementLaborCost(double value) {
+    laborCost += value;
+  }
 }
 
 //  بيانات العمال
@@ -53,7 +56,6 @@ List<Worker> workers = [
   Worker(name: 'محمد فهد', laborCost: 0),
   // Add more workers as needed
 ];
-
 
 class ProductionPage extends StatefulWidget {
   const ProductionPage({super.key});
@@ -85,22 +87,22 @@ class _ProductionPageState extends State<ProductionPage> {
     'الجمعة: 70',
     'السبت: 60',
   ];
-Future<void> saveWorkersLocally(List<Worker> workers) async {
-  final prefs = await SharedPreferences.getInstance();
-  final encodedWorkers = workers.map((worker) => worker.toJson()).toList();
-  await prefs.setStringList('workers', encodedWorkers.cast<String>());
-}
+  Future<void> saveWorkersLocally(List<Worker> workers) async {
+    final prefs = await SharedPreferences.getInstance();
+    final encodedWorkers = workers.map((worker) => worker.toJson()).toList();
+    await prefs.setStringList('workers', encodedWorkers.cast<String>());
+  }
 
 // Function to load workers from local storage
-Future<List<Worker>> loadWorkersLocally() async {
-  
-  final prefs = await SharedPreferences.getInstance();
-  final encodedWorkers = prefs.getStringList('workers') ?? [];
-  return encodedWorkers
-      .map((encodedWorker) =>
-          Worker.fromJson(encodedWorker as Map<String, dynamic>))
-      .toList();
-}
+  Future<List<Worker>> loadWorkersLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    final encodedWorkers = prefs.getStringList('workers') ?? [];
+    return encodedWorkers
+        .map((encodedWorker) =>
+            Worker.fromJson(encodedWorker as Map<String, dynamic>))
+        .toList();
+  }
+
   @override
   void dispose() {
     productionController.dispose();
@@ -117,21 +119,27 @@ Future<List<Worker>> loadWorkersLocally() async {
   }
 
   Future<void> loadWorkersFromFirestore() async {
+    setState(() {
+      // _isLoading = true;
+    });
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       CollectionReference workersCollection = firestore.collection('workers');
       QuerySnapshot querySnapshot = await workersCollection.get();
       List<Worker> loadedWorkers = [];
-      querySnapshot.docs.forEach((doc) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        loadedWorkers.add(Worker(
-          name: data['name'],
-          laborCost: data['laborCost'].toDouble(),
-        ));
-      });
+      for (var doc in querySnapshot.docs) {
+        Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
+        if (data != null && data.containsKey('name')) {
+          loadedWorkers.add(Worker(
+            name: data['name'],
+            laborCost: data['laborCost'].toDouble(),
+          ));
+        }
+      }
 
       setState(() {
         workers = loadedWorkers;
+        _isLoading = false;
       });
     } catch (e) {
       print('Error loading data from Firestore: $e');

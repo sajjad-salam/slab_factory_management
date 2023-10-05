@@ -19,7 +19,9 @@ class _ListpageState extends State<Listpage> {
   void initState() {
     super.initState();
     gettotal_in();
+    gettotal_in2();
     _loadCounter();
+    loadCostData();
     load_number_of_out();
     // startDataUpdateTimer();
   }
@@ -62,21 +64,91 @@ class _ListpageState extends State<Listpage> {
   }
 
   Future<void> getInventoryCount() async {
-    
-      final firestore = FirebaseFirestore.instance;
-      final snapshot = await firestore
-          .collection('unaffected_production')
-          .doc('total')
-          .get();
-      inventoryCount = snapshot.data()?['productionTotal'] ?? 0;
-    
+    final firestore = FirebaseFirestore.instance;
+    final snapshot =
+        await firestore.collection('unaffected_production').doc('total').get();
+    inventoryCount = snapshot.data()?['productionTotal'] ?? 0;
   }
 
+  int productionQuantity = 0;
+  int hamzaCost = 0;
+  int muhammadCost = 0;
+  int philanthropistCost = 0;
+  int totalCost = 0;
   int numberOfOut = 0;
   // ignore: non_constant_identifier_names
   Future<int> load_number_of_out() async {
-   
     return numberOfOut;
+  }
+
+  int total_in2 = 0;
+
+  void gettotal_in2() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int storedProductionTotal = prefs.getInt('total_in2') ?? 0;
+    setState(
+      () {
+        total_in2 = storedProductionTotal;
+      },
+    );
+  }
+
+  Future<void> resetCostDataToZero() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      await firestore.collection('workers').doc('cost').set({
+        'hamzaCost': 0,
+        'muhammadCost': 0,
+        'philanthropistCost': 0,
+        'totalCost': 0,
+      });
+      setState(() {
+        hamzaCost = 0;
+        muhammadCost = 0;
+        philanthropistCost = 0;
+        totalCost = 0;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error resetting cost data: $e');
+    }
+  }
+
+  Future<void> resettotal_in2ToZero() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      await firestore.collection('total_in2').doc('total2').set({
+        'productionTotal': 0,
+      });
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error resetting cost data: $e');
+    }
+  }
+
+  Future<void> loadCostData() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot =
+          await firestore.collection('workers').doc('cost').get();
+
+      setState(() {
+        hamzaCost = snapshot['hamzaCost'] ?? 0;
+        muhammadCost = snapshot['muhammadCost'] ?? 0;
+        philanthropistCost = snapshot['philanthropistCost'] ?? 0;
+        totalCost = snapshot['totalCost'] ?? 0;
+      });
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
   }
 
   @override
@@ -104,6 +176,11 @@ class _ListpageState extends State<Listpage> {
                     ),
                     Text(total_in.toString()),
                     const Text(
+                      "المخزون الكلي عدا البيع ",
+                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(total_in2.toString()),
+                    const Text(
                       ":الوارد الكلي ",
                       style: TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
@@ -113,7 +190,8 @@ class _ListpageState extends State<Listpage> {
                     ),
                     Text(
                       sand.toString(),
-                      style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+                      style:
+                          const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     const Text(
                       "حصو",
@@ -121,7 +199,8 @@ class _ListpageState extends State<Listpage> {
                     ),
                     Text(
                       aggregate.toString(),
-                      style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+                      style:
+                          const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     const Text(
                       "اسمنت",
@@ -129,7 +208,8 @@ class _ListpageState extends State<Listpage> {
                     ),
                     Text(
                       cement.toString(),
-                      style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+                      style:
+                          const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     const Text(
                       "كمية الصادر الكلية",
@@ -137,7 +217,20 @@ class _ListpageState extends State<Listpage> {
                     ),
                     Text(
                       outtotal.toString(),
-                      style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+                      style:
+                          const TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        resetCostDataToZero();
+                      },
+                      child: Text('تصفير بيانات العمال '),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        resettotal_in2ToZero();
+                      },
+                      child: Text('تصفير  المخزون الكلي عدا البيع '),
                     ),
                   ],
                 ),

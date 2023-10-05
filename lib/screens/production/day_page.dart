@@ -25,6 +25,69 @@ class DayPage extends StatefulWidget {
 }
 
 class _DayPageState extends State<DayPage> {
+  @override
+  void initState() {
+    super.initState();
+
+    loadWeeklyDataFromStorage();
+    getUnaffectedProductionTotal();
+    gettotal_in();
+    gettotal_in2();
+    loadCostData();
+  }
+
+//  بيانات العمال
+  String selectedWorker = 'Hamza'; // Default worker
+  int productionQuantity = 0;
+  int hamzaCost = 0;
+  int muhammadCost = 0;
+  int philanthropistCost = 0;
+  int totalCost = 0;
+  bool _isLoading = false;
+
+  Future<void> loadCostData() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot =
+          await firestore.collection('costData').doc('cost').get();
+
+      setState(
+        () {
+          hamzaCost = snapshot['hamzaCost'] ?? 0;
+          muhammadCost = snapshot['muhammadCost'] ?? 0;
+          philanthropistCost = snapshot['philanthropistCost'] ?? 0;
+          totalCost = snapshot['totalCost'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
+  }
+
+  Future<void> saveCostData() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      await firestore.collection('workers').doc('cost').set({
+        'hamzaCost': hamzaCost,
+        'muhammadCost': muhammadCost,
+        'philanthropistCost': philanthropistCost,
+        'totalCost': totalCost,
+      });
+    } catch (e) {
+      print('Error saving cost data: $e');
+    }
+  }
+
   TextEditingController productionController = TextEditingController();
 
   int totalWeeklyProduction = 0;
@@ -53,42 +116,6 @@ class _DayPageState extends State<DayPage> {
   MaterialStateProperty<Color?> amberColor =
       MaterialStateProperty.all<Color?>(const Color.fromARGB(255, 105, 63, 0));
 
-  @override
-  void initState() {
-    super.initState();
-
-    loadWeeklyDataFromStorage();
-    getUnaffectedProductionTotal();
-    gettotal_in();
-    loadWorkersLocally();
-    loadWorkersFromFirestore();
-  }
-
-  Future<void> saveWorkersLocally(List<Worker> workers) async {
-    final prefs = await SharedPreferences.getInstance();
-    final encodedWorkers = workers.map((worker) => worker.toJson()).toList();
-    await prefs.setStringList('workers', encodedWorkers.cast<String>());
-  }
-
-  Future<List<Worker>> loadWorkersLocally() async {
-    setState(
-      () {
-        _isLoading = true;
-      },
-    );
-    final prefs = await SharedPreferences.getInstance();
-    final encodedWorkers = prefs.getStringList('workers') ?? [];
-    setState(
-      () {
-        _isLoading = false;
-      },
-    );
-    return encodedWorkers
-        .map((encodedWorker) =>
-            Worker.fromJson(encodedWorker as Map<String, dynamic>))
-        .toList();
-  }
-
   void updateDataAndCheckInternet() async {
     bool hasInternet = await checkInternetConnectivity();
     if (hasInternet) {
@@ -106,6 +133,7 @@ class _DayPageState extends State<DayPage> {
   int weeklyProductionTotal = 0;
   // هذا المتغير هو المخزون الكلي
   int total_in = 0;
+  int total_in2 = 0;
 
   int totalProduction = 0;
   void updateWeeklyProduction() {
@@ -113,36 +141,12 @@ class _DayPageState extends State<DayPage> {
       int productionNumber = int.tryParse(scheduleEntry.split(': ')[1]) ?? 0;
       totalProduction += productionNumber;
     }
-    setState(() {
-      totalWeeklyProduction = totalProduction;
-      production = totalWeeklyProduction.toString();
-    });
-  }
-
-  Future<void> loadWorkersFromFirestore() async {
-    setState(() {
-      // _isLoading = true;
-    });
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      CollectionReference workersCollection = firestore.collection('workers');
-      QuerySnapshot querySnapshot = await workersCollection.get();
-      List<Worker> loadedWorkers = [];
-      querySnapshot.docs.forEach((doc) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        loadedWorkers.add(Worker(
-          name: data['name'],
-          laborCost: data['laborCost'].toDouble(),
-        ));
-      });
-
-      setState(() {
-        workers = loadedWorkers;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('Error loading data from Firestore: $e');
-    }
+    setState(
+      () {
+        totalWeeklyProduction = totalProduction;
+        production = totalWeeklyProduction.toString();
+      },
+    );
   }
 
   void openDayPage(String day) {
@@ -163,22 +167,26 @@ class _DayPageState extends State<DayPage> {
           totalWeeklyProduction: totalWeeklyProduction,
         ),
       ),
-    ).then((updatedProductionNumber) {
-      if (updatedProductionNumber != null) {
-        setState(() {
-          for (int i = 0; i < weeklySchedule.length; i++) {
-            if (weeklySchedule[i].startsWith(day)) {
-              weeklySchedule[i] = '$day: $updatedProductionNumber';
-              break;
-            }
-          }
+    ).then(
+      (updatedProductionNumber) {
+        if (updatedProductionNumber != null) {
+          setState(
+            () {
+              for (int i = 0; i < weeklySchedule.length; i++) {
+                if (weeklySchedule[i].startsWith(day)) {
+                  weeklySchedule[i] = '$day: $updatedProductionNumber';
+                  break;
+                }
+              }
 
-          updateWeeklyProduction(); // Update the weekly production when a day's production is updated
-          saveWeeklyScheduleToStorage(); // Save the updated weekly schedule to storage
-          saveWeeklyProductionToDatabase(); // Save the updated weekly production to the database
-        });
-      }
-    });
+              updateWeeklyProduction(); // Update the weekly production when a day's production is updated
+              saveWeeklyScheduleToStorage(); // Save the updated weekly schedule to storage
+              saveWeeklyProductionToDatabase(); // Save the updated weekly production to the database
+            },
+          );
+        }
+      },
+    );
   }
 
   Future<void> saveWeeklyProductionToDatabase() async {
@@ -187,15 +195,19 @@ class _DayPageState extends State<DayPage> {
 
       CollectionReference workcollection = firestore.collection('workers');
 
-      await workcollection.doc('workersData').set({
-        'workers': workers.map((worker) => worker.toJson()).toList(),
-      });
+      await workcollection.doc('workersData').set(
+        {
+          'workers': workers.map((worker) => worker.toJson()).toList(),
+        },
+      );
       final collectionRef = firestore.collection('weekly_production');
-      await collectionRef.get().then((snapshot) {
-        for (DocumentSnapshot doc in snapshot.docs) {
-          doc.reference.delete();
-        }
-      });
+      await collectionRef.get().then(
+        (snapshot) {
+          for (DocumentSnapshot doc in snapshot.docs) {
+            doc.reference.delete();
+          }
+        },
+      );
 
       int totalProduction = 0;
 
@@ -206,15 +218,19 @@ class _DayPageState extends State<DayPage> {
 
         totalProduction += productionNumber; // Accumulate the production number
 
-        await collectionRef.doc(day).set({
-          'day': day,
-          'productionNumber': productionNumber,
-        });
+        await collectionRef.doc(day).set(
+          {
+            'day': day,
+            'productionNumber': productionNumber,
+          },
+        );
       }
 
-      setState(() {
-        weeklyProductionTotal = totalProduction;
-      });
+      setState(
+        () {
+          weeklyProductionTotal = totalProduction;
+        },
+      );
 
       print('Weekly production data saved to the database.');
 
@@ -230,9 +246,11 @@ class _DayPageState extends State<DayPage> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setInt(
           'unaffectedProductionTotal', unaffectedWeeklyProductionTotal);
-      await firestore.collection('unaffected_production').doc('total').set({
-        'productionTotal': unaffectedWeeklyProductionTotal,
-      });
+      await firestore.collection('unaffected_production').doc('total').set(
+        {
+          'productionTotal': unaffectedWeeklyProductionTotal,
+        },
+      );
     } catch (e) {
       print('Error saving weekly production to the database: $e');
     }
@@ -242,17 +260,31 @@ class _DayPageState extends State<DayPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final int storedProductionTotal =
         prefs.getInt('unaffectedProductionTotal') ?? 0;
-    setState(() {
-      unaffectedWeeklyProductionTotal = storedProductionTotal;
-    });
+    setState(
+      () {
+        unaffectedWeeklyProductionTotal = storedProductionTotal;
+      },
+    );
   }
 
   void gettotal_in() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final int storedProductionTotal = prefs.getInt('total_in') ?? 0;
-    setState(() {
-      total_in = storedProductionTotal;
-    });
+    setState(
+      () {
+        total_in = storedProductionTotal;
+      },
+    );
+  }
+
+  void gettotal_in2() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int storedProductionTotal = prefs.getInt('total_in2') ?? 0;
+    setState(
+      () {
+        total_in2 = storedProductionTotal;
+      },
+    );
   }
 
   Future<void> loadWeeklyDataFromStorage() async {
@@ -262,11 +294,13 @@ class _DayPageState extends State<DayPage> {
       final totalProduction = prefs.getInt('weeklyProductionTotal');
       if (jsonString != null) {
         final jsonList = jsonDecode(jsonString) as List<dynamic>;
-        setState(() {
-          weeklySchedule = jsonList.map((json) => json.toString()).toList();
-          weeklyProductionTotal = totalProduction ?? 0;
-          production = weeklyProductionTotal.toString();
-        });
+        setState(
+          () {
+            weeklySchedule = jsonList.map((json) => json.toString()).toList();
+            weeklyProductionTotal = totalProduction ?? 0;
+            production = weeklyProductionTotal.toString();
+          },
+        );
       }
     } catch (e) {
       print('Error loading weekly data from storage: $e');
@@ -292,11 +326,17 @@ class _DayPageState extends State<DayPage> {
       final totalProduction = prefs.getInt('totalWeeklyProduction');
       if (jsonString != null) {
         final jsonList = jsonDecode(jsonString) as List<dynamic>;
-        setState(() {
-          weeklySchedule = jsonList.map((json) => json.toString()).toList();
-          totalWeeklyProduction = totalProduction ?? 0;
-          production = totalWeeklyProduction.toString();
-        });
+        setState(
+          () {
+            weeklySchedule = jsonList
+                .map(
+                  (json) => json.toString(),
+                )
+                .toList();
+            totalWeeklyProduction = totalProduction ?? 0;
+            production = totalWeeklyProduction.toString();
+          },
+        );
       }
     } catch (e) {
       print('Error loading weekly schedule from storage: $e');
@@ -312,18 +352,8 @@ class _DayPageState extends State<DayPage> {
     }
   }
 
-  String selectedDay = 'Monday'; // Default day
-  int productionQuantity = 0;
   TextEditingController productionQuantit = TextEditingController();
-  Worker? selectedWorker;
-  List<Worker> workers = [
-    Worker(name: 'حمزة فاضل', laborCost: 0),
-    Worker(name: 'رسول عباس', laborCost: 0),
-    Worker(name: 'محمد فهد', laborCost: 0),
-    // Add more workers as needed
-  ];
-  ProductionModel productionData = ProductionModel(day: 'Monday');
-  bool _isLoading = false;
+
   String updatedProduction = "";
 
   @override
@@ -343,6 +373,13 @@ class _DayPageState extends State<DayPage> {
           children: [
             const SizedBox(height: 10),
             CupertinoTextField(
+              onChanged: (value) {
+                setState(
+                  () {
+                    productionQuantity = int.tryParse(value) ?? 0;
+                  },
+                );
+              },
               decoration: BoxDecoration(
                 // color: CupertinoColors.extraLightBackgroundGray,
                 borderRadius: BorderRadius.circular(10),
@@ -360,105 +397,114 @@ class _DayPageState extends State<DayPage> {
               ),
             ),
             const SizedBox(height: 20),
-            DropdownButton<Worker>(
+            DropdownButton<String>(
               value: selectedWorker,
               onChanged: (worker) {
-                setState(() {
-                  selectedWorker = worker;
-                  productionData.selectedWorkers =
-                      List.from(productionData.selectedWorkers)..add(worker!);
-                  selectedWorker!.laborCost +=
-                      double.tryParse(productionController.text) ?? 0.0;
-                });
-              },
-              items: workers.map((worker) {
-                return DropdownMenuItem<Worker>(
-                  value: worker,
-                  child: Text(worker.name),
+                setState(
+                  () {
+                    selectedWorker = worker!;
+                  },
                 );
-              }).toList(),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                print(workers.toList());
-                // print(selectedWorker?.laborCost ?? 0);
-                // print(selectedDay);
-                // print(selectedWorker?.name ?? "null");
               },
-              child: Text('print'),
+              items: const [
+                DropdownMenuItem<String>(
+                  value: 'Hamza',
+                  child: Text('Hamza'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Muhammad',
+                  child: Text('Muhammad'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Philanthropist',
+                  child: Text('Philanthropist'),
+                ),
+              ],
             ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: workers.length,
-                itemBuilder: (context, index) {
-                  if (index < productionData.selectedWorkers.length) {
-                    return ListTile(
-                      title: Text(
-                          productionData.selectedWorkers[index].name ?? ""),
-                      subtitle: Text(
-                        'Labor Cost: \$${productionData.selectedWorkers[index].laborCost.toStringAsFixed(2)}',
-                      ),
-                    );
-                  } else {
-                    return null; // or an empty widget if you prefer
-                  }
-                },
-              ),
-            ),
+            Text('Selected Worker: $selectedWorker'),
+            Text('Production Quantity: $productionQuantity'),
+            Text('Hamza Cost: $hamzaCost'),
+            Text('Muhammad Cost: $muhammadCost'),
+            Text('Philanthropist Cost: $philanthropistCost'),
+            Text('total Cost: $totalCost'),
             const SizedBox(height: 20),
             _isLoading
                 ? CircularProgressIndicator() // Display the loading indicator
                 : ElevatedButton(
                     onPressed: () async {
-                      setState(() {
-                        _isLoading = true;
-                      });
+                      setState(
+                        () {
+                          _isLoading = true;
+                        },
+                      );
+                      //  هاي بيانا تلاعمال
+                      switch (selectedWorker) {
+                        case 'Hamza':
+                          hamzaCost += (productionQuantity * 600);
+                          break;
+                        case 'Muhammad':
+                          muhammadCost += (productionQuantity * 600);
+                          break;
+                        case 'Philanthropist':
+                          philanthropistCost += (productionQuantity * 600);
+                          break;
+                      }
+                      totalCost = hamzaCost + muhammadCost + philanthropistCost;
+                      saveCostData(); // هذه الدالة لحفض بيانات العمال في قاعدة البيانات
+
                       // updateDataAndCheckInternet();
                       saveWeeklyProductionToDatabase();
                       saveWeeklyScheduleToStorage();
                       final firestore = FirebaseFirestore.instance;
 
-                      CollectionReference workcollection =
-                          firestore.collection('workers');
-
-                      await workcollection.doc('workersData').set({
-                        'workers':
-                            workers.map((worker) => worker.toJson()).toList(),
-                      });
                       SharedPreferences prefs =
                           await SharedPreferences.getInstance();
-                      saveWorkersLocally(workers);
 
+                      setState(
+                        () {
+                          updatedProduction = productionController.text;
+
+                          // Navigate to the first screen
+                          print(updatedProduction);
+                          total_in += int.parse(updatedProduction);
+                          total_in2 += int.parse(updatedProduction);
+                        },
+                      );
                       await prefs.setInt('total_in', total_in);
+                      await prefs.setInt('total_in2', total_in2);
                       // Save the unaffected weekly production total in a new collection in the database
-                      await firestore.collection('total_in').doc('total').set({
-                        'productionTotal': total_in,
-                      });
+                      await firestore.collection('total_in').doc('total').set(
+                        {
+                          'productionTotal': total_in,
+                        },
+                      );
+                      await firestore.collection('total_in2').doc('total2').set(
+                        {
+                          'productionTotal': total_in2,
+                        },
+                      );
                       print(total_in);
-                      setState(() {
-                        updatedProduction = productionController.text;
-
-                        // Navigate to the first screen
-                        print(updatedProduction);
-                        total_in += int.parse(updatedProduction);
-                      });
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ProductionPage()));
-
-                      Navigator.pop(context, workers);
-
-                      Navigator.pop(context, updatedProduction);
+                      print(total_in2);
+                      setState(
+                        () {
+                          _isLoading = false;
+                        },
+                      );
                     },
                     child: const Text(
                       'تعديل',
                       style: TextStyle(fontFamily: "myfont", fontSize: 18),
                     ),
                   ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context, updatedProduction);
+              },
+              child: const Text(
+                'خروخ',
+                style: TextStyle(fontFamily: "myfont", fontSize: 18),
+              ),
+            ),
             const SizedBox(height: 10),
             const SizedBox(height: 20),
           ],
