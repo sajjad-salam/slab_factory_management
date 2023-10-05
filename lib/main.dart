@@ -8,7 +8,7 @@ import 'screens/login/login_page.dart';
 import 'screens/notes/notes_page.dart';
 import 'screens/outputing/out_page.dart';
 import 'screens/report/report_page.dart';
-import 'screens/worker_page.dart';
+import 'screens/numbers/numbers_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

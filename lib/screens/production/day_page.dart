@@ -1,6 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:slab_factory_management/screens/production/production_page.dart';
-
 import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -28,20 +26,22 @@ class _DayPageState extends State<DayPage> {
   @override
   void initState() {
     super.initState();
-
+    laoadcost_modl();
+    load_number_of_workers();
     loadWeeklyDataFromStorage();
     getUnaffectedProductionTotal();
     gettotal_in();
     gettotal_in2();
     loadCostData();
+    loadCostDatatotal();
   }
 
 //  بيانات العمال
-  String selectedWorker = 'Hamza'; // Default worker
-  int productionQuantity = 0;
-  int hamzaCost = 0;
-  int muhammadCost = 0;
-  int philanthropistCost = 0;
+  String selectedWorker = 'حمزة'; // Default worker
+  double productionQuantity = 0;
+  double hamzaCost = 0;
+  double muhammadCost = 0;
+  double philanthropistCost = 0;
   int totalCost = 0;
   bool _isLoading = false;
 
@@ -53,15 +53,45 @@ class _DayPageState extends State<DayPage> {
     );
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+      DocumentSnapshot snapshottotal =
+          await firestore.collection('workers').doc('total').get();
       DocumentSnapshot snapshot =
-          await firestore.collection('costData').doc('cost').get();
+          await firestore.collection('workers').doc('cost').get();
 
       setState(
         () {
+          totalCost = snapshottotal['totalCost'] ?? 0.0;
           hamzaCost = snapshot['hamzaCost'] ?? 0;
           muhammadCost = snapshot['muhammadCost'] ?? 0;
           philanthropistCost = snapshot['philanthropistCost'] ?? 0;
-          totalCost = snapshot['totalCost'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
+  }
+
+  Future<void> loadCostDatatotal() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+      DocumentSnapshot snapshottotal =
+          await firestore.collection('workers').doc('total').get();
+
+      setState(
+        () {
+          totalCost = snapshottotal['totalCost'] ?? 0.0;
         },
       );
       setState(
@@ -81,6 +111,9 @@ class _DayPageState extends State<DayPage> {
         'hamzaCost': hamzaCost,
         'muhammadCost': muhammadCost,
         'philanthropistCost': philanthropistCost,
+        // 'totalCost': totalCost,
+      });
+      await firestore.collection('workers').doc('total').set({
         'totalCost': totalCost,
       });
     } catch (e) {
@@ -193,13 +226,6 @@ class _DayPageState extends State<DayPage> {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-      CollectionReference workcollection = firestore.collection('workers');
-
-      await workcollection.doc('workersData').set(
-        {
-          'workers': workers.map((worker) => worker.toJson()).toList(),
-        },
-      );
       final collectionRef = firestore.collection('weekly_production');
       await collectionRef.get().then(
         (snapshot) {
@@ -355,6 +381,66 @@ class _DayPageState extends State<DayPage> {
   TextEditingController productionQuantit = TextEditingController();
 
   String updatedProduction = "";
+  int cost_mold = 0;
+  // هاي دالة جلب سعر القالب من قاعدة البيانات
+  Future<void> laoadcost_modl() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot =
+          await firestore.collection('cost_modl').doc('mold').get();
+
+      setState(
+        () {
+          cost_mold = int.parse(snapshot['mold_cost'] ?? 0);
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
+  }
+
+  // تصفير بيانات العمال
+  Future<void> deleteCostDocument() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      await firestore.collection('workers').doc('cost').delete();
+      print('Document "cost" deleted successfully');
+    } catch (e) {
+      print('Error deleting document "cost": $e');
+    }
+  }
+
+// لود عدد العمال من قاعدة البيانات
+  int number_of_workers = 0;
+  Future<void> load_number_of_workers() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot = await firestore
+          .collection('number_of_workers')
+          .doc('number_of_workers')
+          .get();
+
+      setState(
+        () {
+          number_of_workers = int.parse(snapshot['number'] ?? 0);
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -376,7 +462,7 @@ class _DayPageState extends State<DayPage> {
               onChanged: (value) {
                 setState(
                   () {
-                    productionQuantity = int.tryParse(value) ?? 0;
+                    productionQuantity = double.tryParse(value) ?? 0;
                   },
                 );
               },
@@ -408,28 +494,46 @@ class _DayPageState extends State<DayPage> {
               },
               items: const [
                 DropdownMenuItem<String>(
-                  value: 'Hamza',
-                  child: Text('Hamza'),
+                  value: 'حمزة',
+                  child: Text('حمزة'),
                 ),
                 DropdownMenuItem<String>(
-                  value: 'Muhammad',
-                  child: Text('Muhammad'),
+                  value: 'محمد',
+                  child: Text('محمد'),
                 ),
                 DropdownMenuItem<String>(
-                  value: 'Philanthropist',
-                  child: Text('Philanthropist'),
+                  value: 'حسن',
+                  child: Text('حسن'),
                 ),
               ],
             ),
-            Text('Selected Worker: $selectedWorker'),
-            Text('Production Quantity: $productionQuantity'),
-            Text('Hamza Cost: $hamzaCost'),
-            Text('Muhammad Cost: $muhammadCost'),
-            Text('Philanthropist Cost: $philanthropistCost'),
-            Text('total Cost: $totalCost'),
+            Text(
+              'العامل المختار: $selectedWorker',
+              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
+            Text(
+              'كمية الأنتاخ: $productionQuantity',
+              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
+            Text(
+              'حساب حمزة: $hamzaCost',
+              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
+            Text(
+              'حساب محمد: $muhammadCost',
+              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
+            Text(
+              'حساب حسن: $philanthropistCost',
+              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
+            Text(
+              'حساب العمال الكلي: $totalCost',
+              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
             const SizedBox(height: 20),
             _isLoading
-                ? CircularProgressIndicator() // Display the loading indicator
+                ? const CircularProgressIndicator() // Display the loading indicator
                 : ElevatedButton(
                     onPressed: () async {
                       setState(
@@ -439,17 +543,25 @@ class _DayPageState extends State<DayPage> {
                       );
                       //  هاي بيانا تلاعمال
                       switch (selectedWorker) {
-                        case 'Hamza':
-                          hamzaCost += (productionQuantity * 600);
+                        case 'حمزة':
+                          hamzaCost += (productionQuantity * cost_mold) /
+                              number_of_workers;
                           break;
-                        case 'Muhammad':
-                          muhammadCost += (productionQuantity * 600);
+                        case 'محمد':
+                          muhammadCost += (productionQuantity * cost_mold) /
+                              number_of_workers;
                           break;
-                        case 'Philanthropist':
-                          philanthropistCost += (productionQuantity * 600);
+                        case 'حسن':
+                          philanthropistCost +=
+                              (productionQuantity * cost_mold) /
+                                  number_of_workers;
                           break;
                       }
-                      totalCost = hamzaCost + muhammadCost + philanthropistCost;
+                      try {
+                        totalCost += hamzaCost.toInt() +
+                            muhammadCost.toInt() +
+                            philanthropistCost.toInt();
+                      } catch (e) {}
                       saveCostData(); // هذه الدالة لحفض بيانات العمال في قاعدة البيانات
 
                       // updateDataAndCheckInternet();
@@ -505,7 +617,16 @@ class _DayPageState extends State<DayPage> {
                 style: TextStyle(fontFamily: "myfont", fontSize: 18),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () async {
+                deleteCostDocument();
+              },
+              child: const Text(
+                'تصفير حساب العمال ',
+                style: TextStyle(fontFamily: "myfont", fontSize: 18),
+              ),
+            ),
             const SizedBox(height: 20),
           ],
         ),

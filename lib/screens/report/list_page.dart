@@ -18,6 +18,7 @@ class _ListpageState extends State<Listpage> {
   @override
   void initState() {
     super.initState();
+    loadSecondaryExpensesFromFirestore();
     gettotal_in();
     gettotal_in2();
     _loadCounter();
@@ -93,22 +94,43 @@ class _ListpageState extends State<Listpage> {
     );
   }
 
+  double secondaryExpenses = 0;
+
+  Future<double> loadSecondaryExpensesFromFirestore() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      CollectionReference expensesCollection = firestore.collection('expenses');
+      DocumentSnapshot doc = await expensesCollection.doc('secondary').get();
+
+      if (doc.exists && doc.data() != null) {
+        double secondaryExpensess = doc['secondaryExpenses'].toDouble();
+        setState(() {
+          secondaryExpenses = secondaryExpensess;
+        });
+      }
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading secondary expenses: $e');
+    }
+    // Return a default value of 0.0 in case of an error or missing data
+    return 0.0;
+  }
+
   Future<void> resetCostDataToZero() async {
     setState(() {
       _isLoading = true;
     });
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
-      await firestore.collection('workers').doc('cost').set({
-        'hamzaCost': 0,
-        'muhammadCost': 0,
-        'philanthropistCost': 0,
+      await firestore.collection('workers').doc('total').set({
         'totalCost': 0,
       });
       setState(() {
-        hamzaCost = 0;
-        muhammadCost = 0;
-        philanthropistCost = 0;
         totalCost = 0;
         _isLoading = false;
       });
@@ -134,16 +156,31 @@ class _ListpageState extends State<Listpage> {
     }
   }
 
+  Future<void> resetsecondaryExpenses() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      await firestore.collection('expenses').doc('secondary').set({
+        'secondaryExpenses': 0,
+      });
+      setState(() {
+        secondaryExpenses = 0;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error resetting cost data: $e');
+    }
+  }
+
   Future<void> loadCostData() async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       DocumentSnapshot snapshot =
-          await firestore.collection('workers').doc('cost').get();
+          await firestore.collection('workers').doc('total').get();
 
       setState(() {
-        hamzaCost = snapshot['hamzaCost'] ?? 0;
-        muhammadCost = snapshot['muhammadCost'] ?? 0;
-        philanthropistCost = snapshot['philanthropistCost'] ?? 0;
         totalCost = snapshot['totalCost'] ?? 0;
       });
     } catch (e) {
@@ -162,7 +199,7 @@ class _ListpageState extends State<Listpage> {
         ),
       ),
       body: _isLoading
-          ? const CircularProgressIndicator() // Display the loading indicator
+          ? const CircularProgressIndicator()
           : Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -180,6 +217,11 @@ class _ListpageState extends State<Listpage> {
                       style: TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     Text(total_in2.toString()),
+                    const Text(
+                      "مجموع المصاريف الثانوية",
+                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(secondaryExpenses.toString()),
                     const Text(
                       ":الوارد الكلي ",
                       style: TextStyle(fontFamily: "myfont", fontSize: 20),
@@ -224,13 +266,19 @@ class _ListpageState extends State<Listpage> {
                       onPressed: () {
                         resetCostDataToZero();
                       },
-                      child: Text('تصفير بيانات العمال '),
+                      child: const Text('تصفير حساب العمال '),
                     ),
                     ElevatedButton(
                       onPressed: () {
                         resettotal_in2ToZero();
                       },
-                      child: Text('تصفير  المخزون الكلي عدا البيع '),
+                      child: const Text('تصفير  المخزون الكلي عدا البيع '),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        resetsecondaryExpenses();
+                      },
+                      child: const Text('تصفيرالمصاريف الثانوية'),
                     ),
                   ],
                 ),

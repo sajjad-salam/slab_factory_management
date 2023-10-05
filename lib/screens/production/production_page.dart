@@ -5,7 +5,6 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -365,46 +364,46 @@ class _ProductionPageState extends State<ProductionPage> {
     }
   }
 
-  void _showWarningDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('تحذير'),
-          content: Text('هل تريد تصفير المخزون ؟'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // Handle 'No' option
-                Navigator.of(context).pop();
-              },
-              child: Text('لا'),
-            ),
-            TextButton(
-              onPressed: () async {
-                setState(() {
-                  total_in = 0;
-                });
-                final firestore = FirebaseFirestore.instance;
-                SharedPreferences prefs = await SharedPreferences.getInstance();
+  // void _showWarningDialog(BuildContext context) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text('تحذير'),
+  //         content: Text('هل تريد تصفير المخزون ؟'),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               // Handle 'No' option
+  //               Navigator.of(context).pop();
+  //             },
+  //             child: Text('لا'),
+  //           ),
+  //           TextButton(
+  //             onPressed: () async {
+  //               setState(() {
+  //                 total_in = 0;
+  //               });
+  //               final firestore = FirebaseFirestore.instance;
+  //               SharedPreferences prefs = await SharedPreferences.getInstance();
 
-                await prefs.setInt('total_in', total_in);
-                // Save the unaffected weekly production total in a new collection in the database
-                await firestore.collection('total_in').doc('total').set({
-                  'productionTotal': total_in,
-                });
-                // Handle 'Yes' option
-                // Call your function or perform the desired action here
-                Navigator.of(context).pop();
-                // Add your logic here
-              },
-              child: Text('نعم'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  //               await prefs.setInt('total_in', total_in);
+  //               // Save the unaffected weekly production total in a new collection in the database
+  //               await firestore.collection('total_in').doc('total').set({
+  //                 'productionTotal': total_in,
+  //               });
+  //               // Handle 'Yes' option
+  //               // Call your function or perform the desired action here
+  //               Navigator.of(context).pop();
+  //               // Add your logic here
+  //             },
+  //             child: Text('نعم'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -511,18 +510,18 @@ class _ProductionPageState extends State<ProductionPage> {
                       ),
                     ),
                   ),
-            ElevatedButton(
-              onPressed: () {
-                _showWarningDialog(context);
-              },
-              child: Text(
-                'تصفير المخزون',
-                style: TextStyle(
-                  fontFamily: "myfont",
-                  fontSize: 20,
-                ),
-              ),
-            ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     _showWarningDialog(context);
+            //   },
+            //   child: Text(
+            //     'تصفير المخزون',
+            //     style: TextStyle(
+            //       fontFamily: "myfont",
+            //       fontSize: 20,
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),

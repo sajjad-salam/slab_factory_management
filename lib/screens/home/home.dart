@@ -70,8 +70,8 @@ class _champ_screenState extends State<home_screen> {
               mybutton(
                 rout: "/worker",
                 size: MediaQuery.of(context).size,
-                name: 'العمال',
-                icon: const Icon(Icons.work),
+                name: 'الأعداد',
+                icon: const Icon(Icons.numbers),
                 color: Colors.redAccent,
               ),
 
