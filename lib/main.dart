@@ -3,7 +3,10 @@ import 'package:get/get.dart';
 import 'package:slab_factory_management/screens/incoming/Incoming_page.dart';
 import 'package:slab_factory_management/screens/home/home.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:slab_factory_management/screens/incoming/sand_page.dart';
 import 'package:slab_factory_management/screens/production/production_page.dart';
+import 'screens/incoming/aggregate_page.dart';
+import 'screens/incoming/cement_page.dart';
 import 'screens/login/login_page.dart';
 import 'screens/notes/notes_page.dart';
 import 'screens/outputing/out_page.dart';
@@ -24,7 +27,7 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       defaultTransition: Transition.cupertinoDialog,
-      initialRoute: "/home",
+      initialRoute: "/incoming",
       getPages: [
         GetPage(
           name: "/home",
@@ -57,6 +60,18 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: "/report",
           page: () => const report(),
+        ),
+        GetPage(
+          name: "/cement",
+          page: () => CementPage(),
+        ),
+        GetPage(
+          name: "/aggregate",
+          page: () => aggregatePage(),
+        ),
+        GetPage(
+          name: "/sand",
+          page: () => sandPage(),
         ),
       ],
     );

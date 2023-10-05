@@ -4,11 +4,13 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 
+import 'cement_page.dart';
 import 'element_card.dart';
 
 // ignore: camel_case_types
@@ -104,8 +106,11 @@ class _incoming_screenState extends State<incoming_screen> {
   @override
   void initState() {
     super.initState();
+    loadCostsandData();
+    loadCostcementdData();
+    loadCostaggregateData();
     _loadCounter();
-    startDataUpdateTimer();
+    // startDataUpdateTimer();
   }
 
   Future<void> updateDataInDatabase() async {
@@ -132,158 +137,151 @@ class _incoming_screenState extends State<incoming_screen> {
         snackPosition: SnackPosition.BOTTOM);
   }
 
-  Future<void> _showSettingsDialog(BuildContext context) async {
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Builder(
-          builder: (BuildContext context) {
-            final double keyboardHeight =
-                MediaQuery.of(context).viewInsets.bottom;
-            final double maxHeight = MediaQuery.of(context).size.height - 120;
-            final double contentHeight =
-                MediaQuery.of(context).size.height - keyboardHeight - 200;
-            final bool isKeyboardOpen = keyboardHeight > 0;
+  double totalCementPrice = 0.0;
 
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: isKeyboardOpen ? maxHeight : contentHeight,
-                ),
-                child: AlertDialog(
-                  title: const Text(
-                    'اضافة مواد',
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      fontFamily: "myfont",
-                      fontSize: 22,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextField(
-                        textInputAction: TextInputAction.next,
-                        textAlign: TextAlign.right,
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          int intval = int.tryParse(value) ?? 0;
-                          setState(() {
-                            cement += intval;
-                          });
-                        },
-                        decoration: const InputDecoration(
-                          labelText: 'اسمنت',
-                        ),
-                      ),
-                      TextField(
-                        textInputAction: TextInputAction.next,
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          int intval = int.tryParse(value) ?? 0;
-                          setState(() {
-                            sand += intval;
-                          });
-                        },
-                        decoration: const InputDecoration(
-                          labelText: 'رمل',
-                        ),
-                      ),
-                      TextField(
-                        textInputAction: TextInputAction.done,
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          int intval = int.tryParse(value) ?? 0;
-                          setState(() {
-                            aggregate += intval;
-                          });
-                        },
-                        decoration: const InputDecoration(
-                          labelText: 'حصو',
-                        ),
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        storeNumberInDatabase();
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('حفض'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          sand = 0;
-                          aggregate = 0;
-                          cement = 0;
-                        });
-                      },
-                      child: const Text('تصفير الكل'),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
+  bool _isLoading = false;
+  Future<void> loadCostcementdData() async {
+    setState(
+      () {
+        _isLoading = true;
       },
     );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot = await firestore
+          .collection('total_cement')
+          .doc('total_cement_price')
+          .get();
+
+      setState(
+        () {
+          totalCementPrice = snapshot['totalCost'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
+  }
+
+  double totalsandtPrice = 0.0;
+
+  // bool _isLoading = false;
+  Future<void> loadCostsandData() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot = await firestore
+          .collection('total_sand')
+          .doc('total_sand_price')
+          .get();
+
+      setState(
+        () {
+          totalsandtPrice = snapshot['totalCost'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
+  }
+
+  double totalaggregatetPrice = 0.0;
+
+  // bool _isLoading = false;
+  Future<void> loadCostaggregateData() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot = await firestore
+          .collection('total_aggregate')
+          .doc('total_aggregate_price')
+          .get();
+
+      setState(
+        () {
+          totalaggregatetPrice = snapshot['totalCost'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white70,
       resizeToAvoidBottomInset: false,
-      appBar: const CupertinoNavigationBar(
+      appBar: CupertinoNavigationBar(
+        backgroundColor: Colors.pink[800],
         previousPageTitle: "رجوع",
         middle: Text(
           "صفحة الـواردات",
-          style: TextStyle(fontFamily: "myfont", fontSize: 25),
+          style: TextStyle(
+              fontFamily: "myfont", fontSize: 25, color: Colors.white),
         ),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          ElementCard(
-            elementName: 'الأسمنت',
-            elementValue: cement,
-          ),
-          ElementCard(
-            elementName: 'الرمل',
-            elementValue: sand,
-          ),
-          ElementCard(
-            elementName: 'الحصو',
-            elementValue: aggregate,
-          ),
-          // Spacer(),
-          const SizedBox(
-            height: 200,
-          ),
-          ElevatedButton(
-            onPressed: () {
-              _showSettingsDialog(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.brown,
-              shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(20), // Make the button rounded
-              ),
+      body: _isLoading
+          ? const CircularProgressIndicator() // Display the loading indicator
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                InkWell(
+                  onTap: () {
+                    Get.toNamed("/cement");
+                  },
+                  child: ElementCard(
+                    elementName: 'الأسمنت',
+                    elementValue: totalCementPrice.toInt(),
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    Get.toNamed("/sand");
+                  },
+                  child: ElementCard(
+                    elementName: 'الرمل',
+                    elementValue: totalsandtPrice.toInt(),
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    Get.toNamed("/aggregate");
+                  },
+                  child: ElementCard(
+                    elementName: 'الحصو',
+                    elementValue: totalaggregatetPrice.toInt(),
+                  ),
+                ),
+                // Spacer(),
+                const SizedBox(
+                  height: 200,
+                ),
+              ],
             ),
-            child: const Text(
-              'اضافة مواد',
-              style: TextStyle(
-                fontFamily: "myfont",
-                fontSize: 30,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

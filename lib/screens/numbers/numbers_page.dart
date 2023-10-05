@@ -38,7 +38,7 @@ class _WorkersPageState extends State<WorkersPage> {
 
       setState(
         () {
-          number_of_workers = snapshot['number'] ?? 0;
+          number_of_workers = int.parse(snapshot['number'] ?? 0);
           _isLoading = false;
         },
       );
@@ -138,7 +138,7 @@ class _WorkersPageState extends State<WorkersPage> {
       appBar: const CupertinoNavigationBar(
         previousPageTitle: "رجوع",
         middle: Text(
-          "صفحة العمال ",
+          "صفحة الاعداد ",
           style: TextStyle(fontFamily: "myfont", fontSize: 20),
         ),
       ),
