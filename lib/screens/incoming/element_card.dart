@@ -1,8 +1,6 @@
 // ignore_for_file: file_names
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:slab_factory_management/screens/incoming/Incoming_page.dart';
 
 class ElementCard extends StatefulWidget {
   final String elementName;

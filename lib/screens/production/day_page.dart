@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, non_constant_identifier_names, empty_catches
+
 import 'package:flutter/cupertino.dart';
 import 'dart:async';
 import 'dart:convert';

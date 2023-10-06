@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       defaultTransition: Transition.cupertinoDialog,
-      initialRoute: "/incoming",
+      initialRoute: "/report",
       getPages: [
         GetPage(
           name: "/home",
@@ -67,11 +67,11 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: "/aggregate",
-          page: () => aggregatePage(),
+          page: () => const aggregatePage(),
         ),
         GetPage(
           name: "/sand",
-          page: () => sandPage(),
+          page: () => const sandPage(),
         ),
       ],
     );

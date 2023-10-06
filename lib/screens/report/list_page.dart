@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,26 +14,114 @@ class Listpage extends StatefulWidget {
 
 class _ListpageState extends State<Listpage> {
   int inventoryCount = 0;
-  int cement = 0;
-  int sand = 0;
-  int aggregate = 0;
+
   @override
   void initState() {
     super.initState();
     loadSecondaryExpensesFromFirestore();
     gettotal_in();
+    loadCostaggregateData();
+    loadCostcementdData();
+    loadCostsandData();
     gettotal_in2();
-    _loadCounter();
     loadCostData();
-    load_number_of_out();
-    // startDataUpdateTimer();
   }
 
+  double totalCementPrice = 0.0;
+
   bool _isLoading = false;
+  Future<void> loadCostcementdData() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot = await firestore
+          .collection('total_cement')
+          .doc('total_cement_price')
+          .get();
+
+      setState(
+        () {
+          totalCementPrice = snapshot['totalCost'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
+  }
+
+  double totalsandtPrice = 0.0;
+
+  // bool _isLoading = false;
+  Future<void> loadCostsandData() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot = await firestore
+          .collection('total_sand')
+          .doc('total_sand_price')
+          .get();
+
+      setState(
+        () {
+          totalsandtPrice = snapshot['totalCost'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
+  }
+
+  double totalaggregatetPrice = 0.0;
+
+  // bool _isLoading = false;
+  Future<void> loadCostaggregateData() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot = await firestore
+          .collection('total_aggregate')
+          .doc('total_aggregate_price')
+          .get();
+
+      setState(
+        () {
+          totalaggregatetPrice = snapshot['totalCost'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
+  }
+
   int outtotal = 0;
-  // ignore: non_constant_identifier_names
   int total_in = 0;
-  // ignore: non_constant_identifier_names
   void gettotal_in() async {
     setState(() {
       _isLoading = true;
@@ -43,24 +133,6 @@ class _ListpageState extends State<Listpage> {
       total_in = storedProductionTotal;
       outtotal = totalNumberOut;
       _isLoading = false;
-    });
-  }
-
-  Future<void> _loadCounter() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      if (cement == 0) {
-        // Load cement only if it hasn't been initialized
-        cement = prefs.getInt('cement') ?? 0;
-      }
-      if (sand == 0) {
-        // Load sand only if it hasn't been initialized
-        sand = prefs.getInt('sand') ?? 0;
-      }
-      if (aggregate == 0) {
-        // Load aggregate only if it hasn't been initialized
-        aggregate = prefs.getInt('aggregate') ?? 0;
-      }
     });
   }
 
@@ -77,10 +149,6 @@ class _ListpageState extends State<Listpage> {
   int philanthropistCost = 0;
   int totalCost = 0;
   int numberOfOut = 0;
-  // ignore: non_constant_identifier_names
-  Future<int> load_number_of_out() async {
-    return numberOfOut;
-  }
 
   int total_in2 = 0;
 
@@ -231,7 +299,7 @@ class _ListpageState extends State<Listpage> {
                       style: TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     Text(
-                      sand.toString(),
+                      totalsandtPrice.toString(),
                       style:
                           const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
@@ -240,7 +308,7 @@ class _ListpageState extends State<Listpage> {
                       style: TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     Text(
-                      aggregate.toString(),
+                      totalaggregatetPrice.toString(),
                       style:
                           const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
@@ -249,7 +317,7 @@ class _ListpageState extends State<Listpage> {
                       style: TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     Text(
-                      cement.toString(),
+                      totalCementPrice.toString(),
                       style:
                           const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),

@@ -1,9 +1,8 @@
-// ignore_for_file: file_names
+// ignore_for_file: file_names, avoid_print, library_private_types_in_public_api, use_key_in_widget_constructors
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:slab_factory_management/screens/incoming/Incoming_page.dart';
 
 class CementPage extends StatefulWidget {
   @override

@@ -3,8 +3,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class WorkersPage extends StatefulWidget {
   const WorkersPage({super.key});
@@ -175,8 +173,6 @@ class _WorkersPageState extends State<WorkersPage> {
                   onPressed: () {
                     edit_modl_cost();
                     edit_number_of_workers();
-                    // getInventoryCount();
-                    // calculateTotalCost();
                   },
                   child: const Text(
                     'تحديث الاعداد',
@@ -185,11 +181,11 @@ class _WorkersPageState extends State<WorkersPage> {
                 ),
                 Text(
                   "عدد العمال الحالي هو :$number_of_workers",
-                  style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                  style: const TextStyle(fontFamily: "myfont", fontSize: 20),
                 ),
                 Text(
                   "سعر القالب الحالي هو : $totalCost",
-                  style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                  style: const TextStyle(fontFamily: "myfont", fontSize: 20),
                 ),
                 const SizedBox(height: 10),
               ],

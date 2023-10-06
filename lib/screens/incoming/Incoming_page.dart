@@ -1,16 +1,12 @@
-// ignore_for_file: file_names
+// ignore_for_file: file_names, avoid_print
 
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 
-import 'cement_page.dart';
 import 'element_card.dart';
 
 // ignore: camel_case_types
@@ -27,114 +23,13 @@ class _incoming_screenState extends State<incoming_screen> {
   int sand = 0;
   int aggregate = 0;
 
-  Future<bool> checkInternetConnectivity() async {
-    var connectivityResult = await Connectivity().checkConnectivity();
-    return connectivityResult != ConnectivityResult.none;
-  }
-
-  void updateDataAndCheckInternet() async {
-    bool hasInternet = await checkInternetConnectivity();
-    if (hasInternet) {
-      await updateDataInDatabase();
-    } else {
-      // ignore: avoid_print
-      print('No internet connection available. Data update postponed.');
-    }
-  }
-
-  Future<void> _loadCounter() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      if (cement == 0) {
-        // Load cement only if it hasn't been initialized
-        cement = prefs.getInt('cement') ?? 0;
-        // ignore: avoid_print
-        print(cement);
-      }
-      if (sand == 0) {
-        // Load sand only if it hasn't been initialized
-        sand = prefs.getInt('sand') ?? 0;
-        // ignore: avoid_print
-        print(sand);
-      }
-      if (aggregate == 0) {
-        // Load aggregate only if it hasn't been initialized
-        aggregate = prefs.getInt('aggregate') ?? 0;
-        // ignore: avoid_print
-        print(aggregate);
-      }
-      // ignore: avoid_print
-      print('Cement: $cement, Sand: $sand, Aggregate: $aggregate');
-    });
-  }
-
-  void storeNumberInDatabase() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool hasInternet = await checkInternetConnectivity();
-
-    setState(() {
-      prefs.setInt('cement', cement);
-      prefs.setInt('sand', sand);
-      prefs.setInt('aggregate', aggregate);
-    });
-
-    if (hasInternet) {
-      try {
-        FirebaseFirestore firestore = FirebaseFirestore.instance;
-        DocumentReference docRef = firestore.collection('incoming').doc('doc');
-
-        await docRef.set({
-          'sand': sand.toString(),
-          'cement': cement.toString(),
-          'aggregate': aggregate.toString(),
-        });
-
-        Get.snackbar("رسالة", "تم ارسال البيانات بنجاح",
-            snackPosition: SnackPosition.BOTTOM);
-      } catch (e) {
-        Get.snackbar("Error", "$e", snackPosition: SnackPosition.BOTTOM);
-      }
-    }
-  }
-
-  void startDataUpdateTimer() {
-    Timer.periodic(const Duration(minutes: 1), (Timer timer) {
-      updateDataAndCheckInternet();
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     loadCostsandData();
     loadCostcementdData();
     loadCostaggregateData();
-    _loadCounter();
     // startDataUpdateTimer();
-  }
-
-  Future<void> updateDataInDatabase() async {
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      DocumentReference docRef = firestore.collection('incoming').doc('doc');
-
-      await docRef.set({
-        'sand': sand,
-        'cement': cement,
-        'aggregate': aggregate,
-      });
-
-      // ignore: avoid_print
-      print('Data stored in the database successfully!');
-    } catch (e) {
-      // ignore: avoid_print
-      print('Error storing data in the database: $e');
-    }
-
-    // ignore: avoid_print
-    print('Data updated successfully!');
-    Get.snackbar("تحديث", "تم تحديث البيانات ",
-        snackPosition: SnackPosition.BOTTOM);
   }
 
   double totalCementPrice = 0.0;
@@ -238,7 +133,7 @@ class _incoming_screenState extends State<incoming_screen> {
       appBar: CupertinoNavigationBar(
         backgroundColor: Colors.pink[800],
         previousPageTitle: "رجوع",
-        middle: Text(
+        middle: const Text(
           "صفحة الـواردات",
           style: TextStyle(
               fontFamily: "myfont", fontSize: 25, color: Colors.white),
