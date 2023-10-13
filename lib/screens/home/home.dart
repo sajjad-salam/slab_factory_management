@@ -55,7 +55,7 @@ class _champ_screenState extends State<home_screen> {
               const SizedBox(
                   height: 10), // Adjust the spacing between the items
               mybutton(
-                rout: "/Production",
+                rout: "/chose",
                 size: MediaQuery.of(context).size,
                 name: 'الأنتاخ',
                 icon: const Icon(Icons.check_box),

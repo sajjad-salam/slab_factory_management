@@ -32,7 +32,7 @@ class _incoming_screenState extends State<incoming_screen> {
     // startDataUpdateTimer();
   }
 
-  double totalCementPrice = 0.0;
+  int totalCementPrice = 0;
 
   bool _isLoading = false;
   Future<void> loadCostcementdData() async {
@@ -59,11 +59,11 @@ class _incoming_screenState extends State<incoming_screen> {
         },
       );
     } catch (e) {
-      print('Error loading cost data: $e');
+      print('Error loading cost data aa: $e');
     }
   }
 
-  double totalsandtPrice = 0.0;
+  int totalsandtPrice = 0;
 
   // bool _isLoading = false;
   Future<void> loadCostsandData() async {
@@ -94,7 +94,7 @@ class _incoming_screenState extends State<incoming_screen> {
     }
   }
 
-  double totalaggregatetPrice = 0.0;
+  int totalaggregatetPrice = 0;
 
   // bool _isLoading = false;
   Future<void> loadCostaggregateData() async {
@@ -121,7 +121,7 @@ class _incoming_screenState extends State<incoming_screen> {
         },
       );
     } catch (e) {
-      print('Error loading cost data: $e');
+      print('Error loading cost data ff: $e');
     }
   }
 

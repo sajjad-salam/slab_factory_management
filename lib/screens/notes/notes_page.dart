@@ -27,6 +27,9 @@ class _NotesPageState extends State<NotesPage> {
   double secondaryExpenses = 0.0;
   Future<void> saveSecondaryExpensesToFirestore(
       double secondaryExpenses) async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -37,6 +40,9 @@ class _NotesPageState extends State<NotesPage> {
       // Update the secondary expenses in the Firestore document
       await expensesRef.set({
         'secondaryExpenses': secondaryExpenses,
+      });
+      setState(() {
+        _isLoading = false;
       });
 
       print('Secondary expenses data saved to Firestore.');
@@ -225,16 +231,6 @@ class _NotesPageState extends State<NotesPage> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  ElevatedButton(
-                    style: ButtonStyle(backgroundColor: amberColor),
-                    onPressed: () {
-                      addNote();
-                    },
-                    child: const Text(
-                      'اضافة ملاحضة',
-                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
-                    ),
-                  ),
                 ],
               ),
             ),

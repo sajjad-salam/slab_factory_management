@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 // ignore: camel_case_types
 class aggregateData {
   final String type;
-  final double price;
+  final int price;
   final String number;
 
   aggregateData({
@@ -93,7 +93,7 @@ class _aggregatePageState extends State<aggregatePage> {
       _isLoading = true;
     });
     final type = typeController.text;
-    final price = double.tryParse(priceController.text) ?? 0.0;
+    final price = int.parse(priceController.text);
     final number = type_car.text;
 
     if (type.isNotEmpty && price > 0 && number.isNotEmpty) {
@@ -120,9 +120,9 @@ class _aggregatePageState extends State<aggregatePage> {
     }
   }
 
-  double totalaggregatePrice = 0.0;
+  int totalaggregatePrice = 0;
   void calculateTotalPrice() {
-    double totalPrice = 0.0;
+    int totalPrice = 0;
     for (final aggregate in aggregateList) {
       totalPrice += aggregate.price;
     }
@@ -175,7 +175,7 @@ class _aggregatePageState extends State<aggregatePage> {
 
       setState(
         () {
-          totalaggregatePrice = double.parse(snapshot['totalCost'] ?? 0);
+          totalaggregatePrice = snapshot['totalCost'] ?? 0;
         },
       );
       setState(

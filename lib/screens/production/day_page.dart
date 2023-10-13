@@ -6,44 +6,57 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DayPage extends StatefulWidget {
   final String day;
   final String productionNumber;
+  final int number_factory;
 
   const DayPage({
     Key? key,
     required this.day,
     required this.productionNumber,
     required int totalWeeklyProduction,
+    required this.number_factory,
   }) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
-  _DayPageState createState() => _DayPageState();
+  _DayPageState createState() => _DayPageState(number_factory: number_factory);
 }
 
 class _DayPageState extends State<DayPage> {
+  _DayPageState({required this.number_factory});
+  final int number_factory;
   @override
   void initState() {
     super.initState();
+    loadCostData();
     laoadcost_modl();
     load_number_of_workers();
     loadWeeklyDataFromStorage();
     getUnaffectedProductionTotal();
     gettotal_in();
     gettotal_in2();
-    loadCostData();
-    loadCostDatatotal();
   }
 
 //  بيانات العمال
-  String selectedWorker = 'حمزة'; // Default worker
+  String selectedWorker = 'worker1'; // Default worker
   double productionQuantity = 0;
-  double hamzaCost = 0;
-  double muhammadCost = 0;
-  double philanthropistCost = 0;
+  double worker1 = 0;
+  double worker6 = 0;
+  double worker7 = 0;
+  double worker8 = 0;
+  double worker5 = 0;
+  int worker1d = 0;
+  int worker5d = 0;
+  int worker6d = 0;
+  int worker7d = 0;
+  int worker8d = 0;
+
   int totalCost = 0;
   bool _isLoading = false;
 
@@ -56,66 +69,148 @@ class _DayPageState extends State<DayPage> {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-      DocumentSnapshot snapshottotal =
-          await firestore.collection('workers').doc('total').get();
-      DocumentSnapshot snapshot =
-          await firestore.collection('workers').doc('cost').get();
+      DocumentSnapshot snapshottotal = await firestore
+          .collection('workers$number_factory')
+          .doc('total')
+          .get();
+      DocumentSnapshot snapshot = await firestore
+          .collection('workers$number_factory')
+          .doc('cost')
+          .get();
 
-      setState(
-        () {
-          totalCost = snapshottotal['totalCost'] ?? 0.0;
-          hamzaCost = snapshot['hamzaCost'] ?? 0;
-          muhammadCost = snapshot['muhammadCost'] ?? 0;
-          philanthropistCost = snapshot['philanthropistCost'] ?? 0;
-        },
-      );
+      if (snapshottotal.exists) {
+        setState(
+          () {
+            totalCost = snapshottotal['totalCost'] ?? 0.0;
+            worker1 = snapshot['worker1'] ?? 0.0;
+            worker6 = snapshot['worker2'] ?? 0.0;
+            worker7 = snapshot['worker3'] ?? 0.0;
+            worker8 = snapshot['worker4'] ?? 0.0;
+            worker5 = snapshot['worker5'] ?? 0.0;
+            worker1d = snapshot['worker1d'] ?? 0.0;
+            worker6d = snapshot['worker2d'] ?? 0.0;
+            worker7d = snapshot['worker3d'] ?? 0.0;
+            worker8d = snapshot['worker4d'] ?? 0.0;
+            worker5d = snapshot['worker5d'] ?? 0.0;
+          },
+        );
+        print(worker1);
+        print(worker6);
+        print(worker7);
+        print(worker8);
+        print(worker5);
+        // Access the fields here
+      } else {
+        // Handle the case where the document does not exist
+      }
+
       setState(
         () {
           _isLoading = false;
         },
       );
     } catch (e) {
-      print('Error loading cost data: $e');
-    }
-  }
-
-  Future<void> loadCostDatatotal() async {
-    setState(
-      () {
-        _isLoading = true;
-      },
-    );
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-      DocumentSnapshot snapshottotal =
-          await firestore.collection('workers').doc('total').get();
-
-      setState(
-        () {
-          totalCost = snapshottotal['totalCost'] ?? 0.0;
-        },
-      );
-      setState(
-        () {
-          _isLoading = false;
-        },
-      );
-    } catch (e) {
-      print('Error loading cost data: $e');
+      print('Error loading cost the values data: $e');
     }
   }
 
   Future<void> saveCostData() async {
+    switch (selectedWorker) {
+      case 'worker1':
+        worker1 += (productionQuantity * cost_mold) / number_of_workers;
+        worker1d += 1;
+        break;
+      case 'worker2':
+        worker6 += (productionQuantity * cost_mold) / number_of_workers;
+        worker6d += 1;
+        break;
+      case 'worker3':
+        worker7 += (productionQuantity * cost_mold) / number_of_workers;
+        worker7d += 1;
+        break;
+      case 'worker4':
+        worker8 += (productionQuantity * cost_mold) / number_of_workers;
+        worker8d += 1;
+        break;
+      case 'worker5':
+        worker5 += (productionQuantity * cost_mold) / number_of_workers;
+        worker5d += 1;
+        break;
+    }
+    try {
+      totalCost += worker1.toInt() +
+          worker6.toInt() +
+          worker5.toInt() +
+          worker7.toInt() +
+          worker8.toInt();
+    } catch (e) {
+      print(e);
+    }
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
-      await firestore.collection('workers').doc('cost').set({
-        'hamzaCost': hamzaCost,
-        'muhammadCost': muhammadCost,
-        'philanthropistCost': philanthropistCost,
+      await firestore.collection('workers$number_factory').doc('cost').set({
+        'worker1': worker1,
+        'worker5': worker5,
+        'worker2': worker6,
+        'worker3': worker7,
+        'worker4': worker8,
+        'worker4d': worker8d,
+        'worker1d': worker1d,
+        'worker2d': worker6d,
+        'worker3d': worker7d,
+        'worker5d': worker5d,
+
         // 'totalCost': totalCost,
       });
-      await firestore.collection('workers').doc('total').set({
+      // if (worker1d != 0) {
+      //   await firestore.collection('workers$number_factory').doc('cost').set({
+      //     'worker1': worker1,
+      //     'worker1d': worker1d,
+      //     'worker2': worker2,
+      //     'worker4cost': worker4cost,
+
+      //     'worker3': worker3,
+
+      //     // 'totalCost': totalCost,
+      //   });
+      // }
+      // if (mohammeddays != 0) {
+      //   await firestore.collection('workers$number_factory').doc('cost').set({
+      //     'worker1': worker1,
+      //     'worker2': worker2,
+      //     'worker4cost': worker4cost,
+
+      //     'muhammadays': worker2,
+      //     'worker3': worker3,
+
+      //     // 'totalCost': totalCost,
+      //   });
+      // }
+      // if (philanthropist_dsys != 0) {
+      //   await firestore.collection('workers$number_factory').doc('cost').set({
+      //     'worker1': worker1,
+      //     'worker2': worker2,
+      //     'worker4cost': worker4cost,
+
+      //     'worker3': worker3,
+      //     'philanthropistdays': philanthropist_dsys,
+
+      //     // 'totalCost': totalCost,
+      //   });
+      // }
+      // if (worker4days != 0) {
+      //   await firestore.collection('workers$number_factory').doc('cost').set({
+      //     'worker1': worker1,
+      //     'worker2': worker2,
+      //     'worker4cost': worker4cost,
+      //     'worker4days': worker4days,
+
+      //     'worker3': worker3,
+
+      //     // 'totalCost': totalCost,
+      //   });
+      // }
+      await firestore.collection('workers$number_factory').doc('total').set({
         'totalCost': totalCost,
       });
     } catch (e) {
@@ -128,13 +223,13 @@ class _DayPageState extends State<DayPage> {
   int totalWeeklyProduction = 0;
 
   List<String> weeklySchedule = [
-    'الأحد: 100',
-    'الأثنين: 120',
-    'الثلاثاء: 90',
-    'الأربعاء: 110',
-    'الخميس: 80',
-    'الجمعة: 70',
-    'السبت: 60',
+    'الأحد: 0',
+    'الأثنين: 0',
+    'الثلاثاء: 0',
+    'الأربعاء: 0',
+    'الخميس: 0',
+    'الجمعة: 0',
+    'السبت: 0',
   ];
 
   String production = '';
@@ -184,51 +279,12 @@ class _DayPageState extends State<DayPage> {
     );
   }
 
-  void openDayPage(String day) {
-    String productionNumber = '';
-    for (String scheduleEntry in weeklySchedule) {
-      if (scheduleEntry.startsWith(day)) {
-        productionNumber = scheduleEntry.split(': ')[1];
-        break;
-      }
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DayPage(
-          day: day,
-          productionNumber: productionNumber,
-          totalWeeklyProduction: totalWeeklyProduction,
-        ),
-      ),
-    ).then(
-      (updatedProductionNumber) {
-        if (updatedProductionNumber != null) {
-          setState(
-            () {
-              for (int i = 0; i < weeklySchedule.length; i++) {
-                if (weeklySchedule[i].startsWith(day)) {
-                  weeklySchedule[i] = '$day: $updatedProductionNumber';
-                  break;
-                }
-              }
-
-              updateWeeklyProduction(); // Update the weekly production when a day's production is updated
-              saveWeeklyScheduleToStorage(); // Save the updated weekly schedule to storage
-              saveWeeklyProductionToDatabase(); // Save the updated weekly production to the database
-            },
-          );
-        }
-      },
-    );
-  }
-
   Future<void> saveWeeklyProductionToDatabase() async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-      final collectionRef = firestore.collection('weekly_production');
+      final collectionRef =
+          firestore.collection('weekly_production$number_factory');
       await collectionRef.get().then(
         (snapshot) {
           for (DocumentSnapshot doc in snapshot.docs) {
@@ -272,9 +328,12 @@ class _DayPageState extends State<DayPage> {
       unaffectedWeeklyProductionTotal = unaffectedTotal;
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setInt(
-          'unaffectedProductionTotal', unaffectedWeeklyProductionTotal);
-      await firestore.collection('unaffected_production').doc('total').set(
+      await prefs.setInt('unaffectedProductionTotal$number_factory',
+          unaffectedWeeklyProductionTotal);
+      await firestore
+          .collection('unaffected_production$number_factory')
+          .doc('total')
+          .set(
         {
           'productionTotal': unaffectedWeeklyProductionTotal,
         },
@@ -287,7 +346,7 @@ class _DayPageState extends State<DayPage> {
   void getUnaffectedProductionTotal() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final int storedProductionTotal =
-        prefs.getInt('unaffectedProductionTotal') ?? 0;
+        prefs.getInt('unaffectedProductionTotal$number_factory') ?? 0;
     setState(
       () {
         unaffectedWeeklyProductionTotal = storedProductionTotal;
@@ -296,30 +355,65 @@ class _DayPageState extends State<DayPage> {
   }
 
   void gettotal_in() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final int storedProductionTotal = prefs.getInt('total_in') ?? 0;
     setState(
       () {
-        total_in = storedProductionTotal;
+        _isLoading = true;
       },
     );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot =
+          await firestore.collection('total_in').doc('total').get();
+
+      setState(
+        () {
+          total_in = snapshot['productionTotal'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+      print(total_in);
+    } catch (e) {
+      print('Error loading cost totl data: $e');
+    }
   }
 
   void gettotal_in2() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final int storedProductionTotal = prefs.getInt('total_in2') ?? 0;
     setState(
       () {
-        total_in2 = storedProductionTotal;
+        _isLoading = true;
       },
     );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot =
+          await firestore.collection('total_in2').doc('total2').get();
+
+      setState(
+        () {
+          total_in2 = snapshot['productionTotal'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+      print(total_in2);
+    } catch (e) {
+      print('Error loading cost total2 data: $e');
+    }
   }
 
   Future<void> loadWeeklyDataFromStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString('weeklySchedule');
-      final totalProduction = prefs.getInt('weeklyProductionTotal');
+      final jsonString = prefs.getString('weeklySchedule$number_factory');
+      final totalProduction =
+          prefs.getInt('weeklyProductionTotal$number_factory');
       if (jsonString != null) {
         final jsonList = jsonDecode(jsonString) as List<dynamic>;
         setState(
@@ -340,8 +434,9 @@ class _DayPageState extends State<DayPage> {
       final prefs = await SharedPreferences.getInstance();
       final jsonList = weeklySchedule.map((entry) => entry).toList();
       final jsonString = jsonEncode(jsonList);
-      await prefs.setString('weeklySchedule', jsonString);
-      await prefs.setInt('weeklyProductionTotal', weeklyProductionTotal);
+      await prefs.setString('weeklySchedule$number_factory', jsonString);
+      await prefs.setInt(
+          'weeklyProductionTotal$number_factory', weeklyProductionTotal);
     } catch (e) {
       print('Error saving weekly schedule to storage: $e');
     }
@@ -350,8 +445,9 @@ class _DayPageState extends State<DayPage> {
   Future<void> loadWeeklyScheduleFromStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString('weeklySchedule');
-      final totalProduction = prefs.getInt('totalWeeklyProduction');
+      final jsonString = prefs.getString('weeklySchedule$number_factory');
+      final totalProduction =
+          prefs.getInt('totalWeeklyProduction$number_factory');
       if (jsonString != null) {
         final jsonList = jsonDecode(jsonString) as List<dynamic>;
         setState(
@@ -383,7 +479,7 @@ class _DayPageState extends State<DayPage> {
   TextEditingController productionQuantit = TextEditingController();
 
   String updatedProduction = "";
-  int cost_mold = 0;
+  int cost_mold = 0; //سعر القالب
   // هاي دالة جلب سعر القالب من قاعدة البيانات
   Future<void> laoadcost_modl() async {
     setState(
@@ -403,7 +499,7 @@ class _DayPageState extends State<DayPage> {
         },
       );
     } catch (e) {
-      print('Error loading cost data: $e');
+      print('Error loading cost mold data: $e');
     }
   }
 
@@ -411,7 +507,7 @@ class _DayPageState extends State<DayPage> {
   Future<void> deleteCostDocument() async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
-      await firestore.collection('workers').doc('cost').delete();
+      await firestore.collection('workers$number_factory').doc('cost').delete();
       print('Document "cost" deleted successfully');
     } catch (e) {
       print('Error deleting document "cost": $e');
@@ -435,12 +531,12 @@ class _DayPageState extends State<DayPage> {
 
       setState(
         () {
-          number_of_workers = int.parse(snapshot['number'] ?? 0);
+          number_of_workers = int.tryParse(snapshot['number']) ?? 0;
           _isLoading = false;
         },
       );
     } catch (e) {
-      print('Error loading cost data: $e');
+      print('Error loading cost number of workers data: $e');
     }
   }
 
@@ -461,6 +557,7 @@ class _DayPageState extends State<DayPage> {
           children: [
             const SizedBox(height: 10),
             CupertinoTextField(
+              keyboardType: TextInputType.number,
               onChanged: (value) {
                 setState(
                   () {
@@ -484,7 +581,6 @@ class _DayPageState extends State<DayPage> {
                 color: Color.fromARGB(255, 0, 0, 0), // Set the color to white
               ),
             ),
-            const SizedBox(height: 20),
             DropdownButton<String>(
               value: selectedWorker,
               onChanged: (worker) {
@@ -496,37 +592,69 @@ class _DayPageState extends State<DayPage> {
               },
               items: const [
                 DropdownMenuItem<String>(
-                  value: 'حمزة',
-                  child: Text('حمزة'),
+                  value: 'worker1',
+                  child: Text('العامل الاول'),
                 ),
                 DropdownMenuItem<String>(
-                  value: 'محمد',
-                  child: Text('محمد'),
+                  value: 'worker2',
+                  child: Text('العامل الثاني'),
                 ),
                 DropdownMenuItem<String>(
-                  value: 'حسن',
-                  child: Text('حسن'),
+                  value: 'worker3',
+                  child: Text('العامل الثالث'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'worker4',
+                  child: Text('العامل الرابع'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'worker5',
+                  child: Text('العامل الخامس'),
                 ),
               ],
-            ),
-            Text(
-              'العامل المختار: $selectedWorker',
-              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
             ),
             Text(
               'كمية الأنتاخ: $productionQuantity',
               style: const TextStyle(fontFamily: "myfont", fontSize: 20),
             ),
             Text(
-              'حساب حمزة: $hamzaCost',
+              'حساب العامل الاول: $worker1',
               style: const TextStyle(fontFamily: "myfont", fontSize: 20),
             ),
             Text(
-              'حساب محمد: $muhammadCost',
+              'ايام العامل الاول: $worker1d',
               style: const TextStyle(fontFamily: "myfont", fontSize: 20),
             ),
             Text(
-              'حساب حسن: $philanthropistCost',
+              'حساب العامل الثاني: $worker6',
+              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
+            Text(
+              'ايام العامل الثاني: $worker6d',
+              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
+            Text(
+              'حساب العامل الثالث: $worker7',
+              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
+            Text(
+              'ابام العامل الثالث: $worker7d',
+              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
+            Text(
+              'حساب العامل الرابع: $worker8',
+              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
+            Text(
+              'ابام العامل الرابع: $worker8d',
+              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
+            Text(
+              'حساب العامل الخامس: $worker5',
+              style: const TextStyle(fontFamily: "myfont", fontSize: 20),
+            ),
+            Text(
+              'ابام العامل الخامس: $worker5d',
               style: const TextStyle(fontFamily: "myfont", fontSize: 20),
             ),
             Text(
@@ -544,61 +672,15 @@ class _DayPageState extends State<DayPage> {
                         },
                       );
                       //  هاي بيانا تلاعمال
-                      switch (selectedWorker) {
-                        case 'حمزة':
-                          hamzaCost += (productionQuantity * cost_mold) /
-                              number_of_workers;
-                          break;
-                        case 'محمد':
-                          muhammadCost += (productionQuantity * cost_mold) /
-                              number_of_workers;
-                          break;
-                        case 'حسن':
-                          philanthropistCost +=
-                              (productionQuantity * cost_mold) /
-                                  number_of_workers;
-                          break;
-                      }
-                      try {
-                        totalCost += hamzaCost.toInt() +
-                            muhammadCost.toInt() +
-                            philanthropistCost.toInt();
-                      } catch (e) {}
+
                       saveCostData(); // هذه الدالة لحفض بيانات العمال في قاعدة البيانات
 
                       // updateDataAndCheckInternet();
-                      saveWeeklyProductionToDatabase();
-                      saveWeeklyScheduleToStorage();
-                      final firestore = FirebaseFirestore.instance;
 
-                      SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
-
-                      setState(
-                        () {
-                          updatedProduction = productionController.text;
-
-                          // Navigate to the first screen
-                          print(updatedProduction);
-                          total_in += int.parse(updatedProduction);
-                          total_in2 += int.parse(updatedProduction);
-                        },
-                      );
-                      await prefs.setInt('total_in', total_in);
-                      await prefs.setInt('total_in2', total_in2);
-                      // Save the unaffected weekly production total in a new collection in the database
-                      await firestore.collection('total_in').doc('total').set(
-                        {
-                          'productionTotal': total_in,
-                        },
-                      );
-                      await firestore.collection('total_in2').doc('total2').set(
-                        {
-                          'productionTotal': total_in2,
-                        },
-                      );
                       print(total_in);
                       print(total_in2);
+                      Get.snackbar("رسالة", "تم حفض البيانات بنجاح",
+                          snackPosition: SnackPosition.BOTTOM);
                       setState(
                         () {
                           _isLoading = false;
@@ -612,6 +694,35 @@ class _DayPageState extends State<DayPage> {
                   ),
             ElevatedButton(
               onPressed: () async {
+                saveWeeklyProductionToDatabase();
+                saveWeeklyScheduleToStorage();
+                final firestore = FirebaseFirestore.instance;
+
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+
+                setState(
+                  () {
+                    updatedProduction = productionController.text;
+
+                    // Navigate to the first screen
+                    print(updatedProduction);
+                    total_in += int.parse(updatedProduction);
+                    total_in2 += int.parse(updatedProduction);
+                  },
+                );
+                await prefs.setInt('total_in', total_in);
+                await prefs.setInt('total_in2', total_in2);
+                // Save the unaffected weekly production total in a new collection in the database
+                await firestore.collection('total_in').doc('total').set(
+                  {
+                    'productionTotal': total_in,
+                  },
+                );
+                await firestore.collection('total_in2').doc('total2').set(
+                  {
+                    'productionTotal': total_in2,
+                  },
+                );
                 Navigator.pop(context, updatedProduction);
               },
               child: const Text(
@@ -623,6 +734,9 @@ class _DayPageState extends State<DayPage> {
             ElevatedButton(
               onPressed: () async {
                 deleteCostDocument();
+                Get.snackbar("رسالة",
+                    " تم تصفير حساب العمال بنجاح يرجى الخروخ والعودة مجددا",
+                    snackPosition: SnackPosition.BOTTOM);
               },
               child: const Text(
                 'تصفير حساب العمال ',

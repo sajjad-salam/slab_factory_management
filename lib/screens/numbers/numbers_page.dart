@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class WorkersPage extends StatefulWidget {
   const WorkersPage({super.key});
@@ -81,6 +82,7 @@ class _WorkersPageState extends State<WorkersPage> {
     );
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
+      setState(() {});
       await firestore.collection('cost_modl').doc('mold').set(
         {
           'mold_cost': priceController.text,
@@ -173,6 +175,9 @@ class _WorkersPageState extends State<WorkersPage> {
                   onPressed: () {
                     edit_modl_cost();
                     edit_number_of_workers();
+                    Get.snackbar("رسالة",
+                        "تم تحديث البيانات قم بالرجوع مرة اخرى الى هذه الصفحة ",
+                        snackPosition: SnackPosition.BOTTOM);
                   },
                   child: const Text(
                     'تحديث الاعداد',

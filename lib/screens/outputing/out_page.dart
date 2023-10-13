@@ -1,9 +1,10 @@
-import 'dart:convert';
+// ignore_for_file: avoid_print
+
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'customer_details_page.dart';
 
@@ -17,10 +18,7 @@ class out_screen extends StatefulWidget {
 
 // ignore: camel_case_types
 class _out_screenState extends State<out_screen> {
-  List<Customer> customers = [
-    // Customer(15, 27, 48, 18, name: "سجاد سلام", customerNumber: 200),
-    // Customer(15, 27, 48, 18, name: " محمد بدر", customerNumber: 200)
-  ];
+  List<Customer> customers = [];
 
   List<Customer> filteredCustomers = [];
 
@@ -33,19 +31,38 @@ class _out_screenState extends State<out_screen> {
     filteredCustomers = customers;
     gettotal_in();
     loadCustomersFromDatabase();
-    loadCustomersFromStorage();
-    // updateCustomer
+    // updateCustomer(updatedCustomer);
   }
 
+  bool _isLoading = false;
   // ignore: non_constant_identifier_names
   int total_in = 0;
   // ignore: non_constant_identifier_names
   void gettotal_in() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final int storedProductionTotal = prefs.getInt('total_in') ?? 0;
-    setState(() {
-      total_in = storedProductionTotal;
-    });
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot =
+          await firestore.collection('total_in').doc('total').get();
+
+      setState(
+        () {
+          total_in = snapshot['productionTotal'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+      print(total_in);
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
   }
 
   @override
@@ -55,73 +72,28 @@ class _out_screenState extends State<out_screen> {
     super.dispose();
   }
 
-  int totaloutputing = 0;
-
   void filterCustomers(String searchQuery) {
     setState(() {
       filteredCustomers = customers.where((customer) {
-        return customer.name.toLowerCase().contains(searchQuery.toLowerCase());
+        return customer.id.toLowerCase().contains(searchQuery.toLowerCase());
       }).toList();
     });
   }
 
   Future<void> updateCustomer(Customer updatedCustomer) async {
-    for (Customer customer in customers) {
-      // int productionNumber = int.tryParse(customer.customerNumber) ?? 0;
-      totaloutputing += customer.customerNumber;
-    }
-
     final customerIndex = customers
         .indexWhere((customer) => customer.name == updatedCustomer.name);
     if (customerIndex != -1) {
       setState(() {
         customers[customerIndex] = updatedCustomer;
       });
-      await saveCustomersToStorage();
       await saveCustomersToDatabase();
     }
   }
 
-  Future<void> saveCustomersToStorage() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonList = customers.map((customer) => customer.toJson()).toList();
-    final jsonString = jsonEncode(jsonList);
-    await prefs.setString('customers', jsonString);
-  }
-
-  Future<void> loadCustomersFromStorage() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    for (Customer customer in customers) {
-      // int productionNumber = int.tryParse(customer.customerNumber) ?? 0;
-      totaloutputing += customer.customerNumber;
-      await prefs.setInt('total_number_out', totaloutputing);
-    }
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString('customers');
-      if (jsonString != null) {
-        final jsonList = jsonDecode(jsonString) as List<dynamic>;
-        setState(() {
-          customers = jsonList
-              .map((json) => Customer(
-                    json['flen'],
-                    json['mastek'],
-                    json['flankot'],
-                    json['zefet'],
-                    name: json['name'],
-                    customerNumber: json['customerNumber'],
-                  ))
-              .toList();
-          filteredCustomers = customers;
-        });
-      }
-      // ignore: empty_catches
-    } catch (e) {}
-  }
-
-  void addCustomer(String customerName) {
+  void addCustomer(String customerId, String customerName) {
     final newCustomer = Customer(
+      customerId,
       0,
       0,
       0,
@@ -129,14 +101,16 @@ class _out_screenState extends State<out_screen> {
       name: customerName,
       customerNumber: 0,
     );
+
     setState(() {
       customers.add(newCustomer);
       filteredCustomers = customers;
     });
+
     addCustomerController.clear();
 
-    saveCustomersToStorage();
-    saveCustomersToDatabase();
+    // Save the updated list of customers
+    saveCustomersToDatabase(); // If you want to store this data online
   }
 
   Future<void> saveCustomersToDatabase() async {
@@ -149,12 +123,16 @@ class _out_screenState extends State<out_screen> {
         'customers': customers.map((customer) => customer.toJson()).toList(),
       });
     } catch (e) {
-      // ignore: avoid_print
       print('Error saving customers to database: $e');
     }
   }
 
   Future<void> loadCustomersFromDatabase() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       CollectionReference customersCollection =
@@ -165,22 +143,29 @@ class _out_screenState extends State<out_screen> {
       if (docSnapshot.exists) {
         final data = docSnapshot.data() as Map<String, dynamic>;
         final jsonList = data['customers'] as List<dynamic>;
-        setState(() {
-          customers = jsonList
-              .map((json) => Customer(
-                    json['flen'],
-                    json['mastek'],
-                    json['flankot'],
-                    json['zefet'],
-                    name: json['name'],
-                    customerNumber: json['customerNumber'],
-                  ))
-              .toList();
-          filteredCustomers = customers;
-        });
+        setState(
+          () {
+            customers = jsonList
+                .map((json) => Customer(
+                      json['id'],
+                      json['flen'],
+                      json['mastek'],
+                      json['flankot'],
+                      json['zefet'],
+                      name: json['name'],
+                      customerNumber: json['customerNumber'],
+                    ))
+                .toList();
+            filteredCustomers = customers;
+          },
+        );
       }
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
     } catch (e) {
-      // ignore: avoid_print
       print('Error loading customers from database: $e');
     }
   }
@@ -195,105 +180,114 @@ class _out_screenState extends State<out_screen> {
           style: TextStyle(fontFamily: "myfont", fontSize: 25),
         ),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: searchController,
-              onChanged: (value) {
-                filterCustomers(value);
-              },
-              decoration: const InputDecoration(
-                labelText: 'بحث',
-                prefixIcon: Icon(Icons.search),
-              ),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: filteredCustomers.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(
-                    filteredCustomers[index].name,
-                    textAlign: TextAlign.end,
-                    style: const TextStyle(
-                      fontFamily: "myfont",
-                      fontSize: 20,
-                    ),
-                  ),
-                  subtitle: Text(
-                    '${filteredCustomers[index].customerNumber}',
-                    style: const TextStyle(
-                      fontFamily: "myfont",
-                    ),
-                    textAlign: TextAlign.end,
-                  ),
-                  onTap: () async {
-                    final updatedCustomer = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CustomerDetailsPage(
-                            customer: filteredCustomers[index]),
-                      ),
-                    );
-
-                    if (updatedCustomer != null) {
-                      await updateCustomer(updatedCustomer);
-                    }
-                  },
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
+      body: _isLoading
+          ? const CircularProgressIndicator() // Display the loading indicator
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Expanded(
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: TextField(
-                    controller: addCustomerController,
+                    controller: searchController,
+                    onChanged: (value) {
+                      filterCustomers(value);
+                    },
                     decoration: const InputDecoration(
-                      alignLabelWithHint: true,
-                      labelText: 'اضافة عميل ',
+                      labelText: 'بحث',
+                      prefixIcon: Icon(Icons.search),
                     ),
                   ),
                 ),
-                Transform.scale(
-                  scale: 1.4,
-                  child: IconButton(
-                    alignment: Alignment.bottomCenter,
-                    icon: const Icon(Icons.add_circle),
-                    onPressed: () {
-                      // ignore: avoid_print
-                      print(totaloutputing);
-                      String customerName = addCustomerController.text;
-                      if (customerName.isNotEmpty) {
-                        addCustomer(customerName);
-                      }
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: filteredCustomers.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(
+                          filteredCustomers[index].id,
+                          textAlign: TextAlign.end,
+                          style: const TextStyle(
+                            fontFamily: "myfont",
+                            fontSize: 20,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '${filteredCustomers[index].customerNumber}',
+                          style: const TextStyle(
+                            fontFamily: "myfont",
+                          ),
+                          textAlign: TextAlign.end,
+                        ),
+                        onTap: () async {
+                          final updatedCustomer = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CustomerDetailsPage(
+                                  customer: filteredCustomers[index]),
+                            ),
+                          );
+
+                          if (updatedCustomer != null) {
+                            await updateCustomer(updatedCustomer);
+                          }
+                        },
+                      );
                     },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: addCustomerController,
+                          decoration: const InputDecoration(
+                            alignLabelWithHint: true,
+                            labelText: 'اضافة عميل ',
+                          ),
+                        ),
+                      ),
+                      Transform.scale(
+                        scale: 1.4,
+                        child: IconButton(
+                          alignment: Alignment.bottomCenter,
+                          icon: const Icon(Icons.add_circle),
+                          onPressed: () {
+                            String customerName = addCustomerController.text;
+                            if (customerName.isNotEmpty) {
+                              final random = Random();
+
+                              // Generate a random integer between a specified range (inclusive)
+                              int randomInt = random.nextInt(100000);
+                              addCustomer(
+                                customerName,
+                                randomInt.toString(),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }
 
 class Customer {
+  final String id; // Unique identifier for the customer
   final String name;
   final int customerNumber;
   final int flen;
   final int mastek;
-  final int flankot;
+  final double flankot;
   final int zefet;
 
   Customer(
+    this.id,
     this.flen,
     this.mastek,
     this.flankot,
@@ -304,6 +298,7 @@ class Customer {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       'customerNumber': customerNumber,
       'flen': flen,

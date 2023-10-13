@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 class sandData {
   final String type;
-  final double price;
+  final int price;
   final String number;
 
   sandData({
@@ -86,7 +86,7 @@ class _sandPageState extends State<sandPage> {
       _isLoading = true;
     });
     final type = typeController.text;
-    final price = double.tryParse(priceController.text) ?? 0.0;
+    final price = int.parse(priceController.text);
     final number = numberController.text;
 
     if (type.isNotEmpty && price > 0 && number.isNotEmpty) {
@@ -112,9 +112,9 @@ class _sandPageState extends State<sandPage> {
     }
   }
 
-  double totalsandPrice = 0.0;
+  int totalsandPrice = 0;
   void calculateTotalPrice() {
-    double totalPrice = 0.0;
+    int totalPrice = 0;
     for (final sand in sandList) {
       totalPrice += sand.price;
     }
@@ -164,7 +164,7 @@ class _sandPageState extends State<sandPage> {
 
       setState(
         () {
-          totalsandPrice = double.parse(snapshot['totalCost'] ?? 0);
+          totalsandPrice = snapshot['totalCost'] ?? 0;
         },
       );
       setState(

@@ -10,6 +10,8 @@ import 'screens/incoming/cement_page.dart';
 import 'screens/login/login_page.dart';
 import 'screens/notes/notes_page.dart';
 import 'screens/outputing/out_page.dart';
+import 'screens/production/chose_factory.dart';
+import 'screens/production/day_page.dart';
 import 'screens/report/report_page.dart';
 import 'screens/numbers/numbers_page.dart';
 
@@ -27,7 +29,7 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       defaultTransition: Transition.cupertinoDialog,
-      initialRoute: "/report",
+      initialRoute: "/home",
       getPages: [
         GetPage(
           name: "/home",
@@ -50,10 +52,6 @@ class MyApp extends StatelessWidget {
           page: () => const WorkersPage(),
         ),
         GetPage(
-          name: "/Production",
-          page: () => const ProductionPage(),
-        ),
-        GetPage(
           name: "/notes",
           page: () => const NotesPage(),
         ),
@@ -72,6 +70,10 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: "/sand",
           page: () => const sandPage(),
+        ),
+        GetPage(
+          name: "/chose",
+          page: () => const chose_factory(),
         ),
       ],
     );

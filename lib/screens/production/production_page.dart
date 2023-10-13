@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,57 +15,28 @@ import 'day_page.dart';
 class ProductionModel {
   String day;
   int productionQuantity;
-  List<Worker> selectedWorkers; // Change to List<Worker>
 
   ProductionModel({
     required this.day,
     this.productionQuantity = 0,
-    this.selectedWorkers = const [],
   });
-}
-
-class Worker {
-  final String name;
-  double laborCost;
-
-  Worker({required this.name, required this.laborCost});
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'laborCost': laborCost,
-    };
-  }
-
-  factory Worker.fromJson(Map<String, dynamic> json) {
-    return Worker(
-      name: json['name'],
-      laborCost: json['laborCost'].toDouble(),
-    );
-  }
-  void incrementLaborCost(double value) {
-    laborCost += value;
-  }
 }
 
 //  بيانات العمال
 
-Worker? selectedWorker;
-List<Worker> workers = [
-  Worker(name: 'حمزة فاضل', laborCost: 0),
-  Worker(name: 'رسول عباس', laborCost: 0),
-  Worker(name: 'محمد فهد', laborCost: 0),
-  // Add more workers as needed
-];
-
 class ProductionPage extends StatefulWidget {
-  const ProductionPage({super.key});
+  const ProductionPage({super.key, required this.number_factory});
+  final int number_factory;
 
   @override
   // ignore: library_private_types_in_public_api
-  _ProductionPageState createState() => _ProductionPageState();
+  _ProductionPageState createState() =>
+      _ProductionPageState(number_factory: number_factory);
 }
 
 class _ProductionPageState extends State<ProductionPage> {
+  _ProductionPageState({required this.number_factory});
+  final int number_factory;
   int totalWeeklyProduction = 0;
   bool _isLoading = false;
   String production = '';
@@ -78,29 +50,14 @@ class _ProductionPageState extends State<ProductionPage> {
   String productionNumber = '';
 
   List<String> weeklySchedule = [
-    'الأحد: 100',
-    'الأثنين: 120',
-    'الثلاثاء: 90',
-    'الأربعاء: 110',
-    'الخميس: 80',
-    'الجمعة: 70',
-    'السبت: 60',
+    'الأحد: 0',
+    'الأثنين: 0',
+    'الثلاثاء: 0',
+    'الأربعاء: 0',
+    'الخميس: 0',
+    'الجمعة: 0',
+    'السبت: 0',
   ];
-  Future<void> saveWorkersLocally(List<Worker> workers) async {
-    final prefs = await SharedPreferences.getInstance();
-    final encodedWorkers = workers.map((worker) => worker.toJson()).toList();
-    await prefs.setStringList('workers', encodedWorkers.cast<String>());
-  }
-
-// Function to load workers from local storage
-  Future<List<Worker>> loadWorkersLocally() async {
-    final prefs = await SharedPreferences.getInstance();
-    final encodedWorkers = prefs.getStringList('workers') ?? [];
-    return encodedWorkers
-        .map((encodedWorker) =>
-            Worker.fromJson(encodedWorker as Map<String, dynamic>))
-        .toList();
-  }
 
   @override
   void dispose() {
@@ -114,35 +71,6 @@ class _ProductionPageState extends State<ProductionPage> {
     loadWeeklyDataFromStorage();
     getUnaffectedProductionTotal();
     gettotal_in();
-    loadWorkersFromFirestore();
-  }
-
-  Future<void> loadWorkersFromFirestore() async {
-    setState(() {
-      // _isLoading = true;
-    });
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      CollectionReference workersCollection = firestore.collection('workers');
-      QuerySnapshot querySnapshot = await workersCollection.get();
-      List<Worker> loadedWorkers = [];
-      for (var doc in querySnapshot.docs) {
-        Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
-        if (data != null && data.containsKey('name')) {
-          loadedWorkers.add(Worker(
-            name: data['name'],
-            laborCost: data['laborCost'].toDouble(),
-          ));
-        }
-      }
-
-      setState(() {
-        workers = loadedWorkers;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('Error loading data from Firestore: $e');
-    }
   }
 
   void updateDataAndCheckInternet() async {
@@ -150,6 +78,7 @@ class _ProductionPageState extends State<ProductionPage> {
     if (hasInternet) {
       await saveWeeklyProductionToDatabase();
     } else {
+      Get.snackbar("خطأ", "لا يوجد اتصال في الأنترنت ");
       print('No internet connection available. Data update postponed.');
     }
   }
@@ -182,6 +111,7 @@ class _ProductionPageState extends State<ProductionPage> {
       context,
       MaterialPageRoute(
         builder: (context) => DayPage(
+          number_factory: number_factory,
           day: day,
           productionNumber: productionNumber,
           totalWeeklyProduction: totalWeeklyProduction,
@@ -214,7 +144,8 @@ class _ProductionPageState extends State<ProductionPage> {
         _isLoading = true;
       });
       final firestore = FirebaseFirestore.instance;
-      final collectionRef = firestore.collection('weekly_production');
+      final collectionRef =
+          firestore.collection('weekly_production$number_factory');
 
       // Clear the existing documents in the collection
       await collectionRef.get().then(
@@ -262,16 +193,19 @@ class _ProductionPageState extends State<ProductionPage> {
 
       // Save the unaffected weekly production total in device storage
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setInt(
-          'unaffectedProductionTotal', unaffectedWeeklyProductionTotal);
+      await prefs.setInt('unaffectedProductionTotal$number_factory',
+          unaffectedWeeklyProductionTotal);
 
       // Save the unaffected weekly production total in a new collection in the database
-      await firestore.collection('unaffected_production').doc('total').set(
+      await firestore
+          .collection('unaffected_production$number_factory')
+          .doc('total')
+          .set(
         {
           'productionTotal': unaffectedWeeklyProductionTotal,
         },
       );
-
+      Get.snackbar("رسالة", "تم بنجاح", snackPosition: SnackPosition.BOTTOM);
       setState(
         () {
           _isLoading = false;
@@ -285,7 +219,7 @@ class _ProductionPageState extends State<ProductionPage> {
   void getUnaffectedProductionTotal() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final int storedProductionTotal =
-        prefs.getInt('unaffectedProductionTotal') ?? 0;
+        prefs.getInt('unaffectedProductionTotal$number_factory') ?? 0;
     setState(
       () {
         unaffectedWeeklyProductionTotal = storedProductionTotal;
@@ -294,20 +228,38 @@ class _ProductionPageState extends State<ProductionPage> {
   }
 
   void gettotal_in() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final int storedProductionTotal = prefs.getInt('total_in') ?? 0;
     setState(
       () {
-        total_in = storedProductionTotal;
+        _isLoading = true;
       },
     );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot =
+          await firestore.collection('total_in').doc('total').get();
+
+      setState(
+        () {
+          total_in = snapshot['productionTotal'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+      print(total_in);
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
   }
 
   Future<void> loadWeeklyDataFromStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString('weeklySchedule');
-      final totalProduction = prefs.getInt('weeklyProductionTotal');
+      final jsonString = prefs.getString('weeklySchedule$number_factory');
+      final totalProduction =
+          prefs.getInt('weeklyProductionTotal$number_factory');
       if (jsonString != null) {
         final jsonList = jsonDecode(jsonString) as List<dynamic>;
         setState(
@@ -328,8 +280,9 @@ class _ProductionPageState extends State<ProductionPage> {
       final prefs = await SharedPreferences.getInstance();
       final jsonList = weeklySchedule.map((entry) => entry).toList();
       final jsonString = jsonEncode(jsonList);
-      await prefs.setString('weeklySchedule', jsonString);
-      await prefs.setInt('weeklyProductionTotal', weeklyProductionTotal);
+      await prefs.setString('weeklySchedule$number_factory', jsonString);
+      await prefs.setInt(
+          'weeklyProductionTotal$number_factory', weeklyProductionTotal);
     } catch (e) {
       print('Error saving weekly schedule to storage: $e');
     }
@@ -338,8 +291,9 @@ class _ProductionPageState extends State<ProductionPage> {
   Future<void> loadWeeklyScheduleFromStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString('weeklySchedule');
-      final totalProduction = prefs.getInt('totalWeeklyProduction');
+      final jsonString = prefs.getString('weeklySchedule$number_factory');
+      final totalProduction =
+          prefs.getInt('totalWeeklyProduction$number_factory');
       if (jsonString != null) {
         final jsonList = jsonDecode(jsonString) as List<dynamic>;
         setState(
@@ -487,14 +441,13 @@ class _ProductionPageState extends State<ProductionPage> {
                 : ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        // _isLoading = true;
                         weeklyProductionTotal = 0;
                         for (int i = 0; i < weeklySchedule.length; i++) {
                           final day = weeklySchedule[i].split(': ')[0];
                           weeklySchedule[i] =
                               '$day: 0'; // Set the day number to 0
                         }
-                        calculateWeeklyProduction(); // Recalculate the weekly production total
+                        calculateWeeklyProduction();
                         production =
                             weeklyProductionTotal.toString(); // Update the UI
                       });
@@ -510,6 +463,7 @@ class _ProductionPageState extends State<ProductionPage> {
                       ),
                     ),
                   ),
+
             // ElevatedButton(
             //   onPressed: () {
             //     _showWarningDialog(context);

@@ -72,7 +72,7 @@ class _CementPageState extends State<CementPage> {
       _isLoading = true;
     });
     final type = typeController.text;
-    final price = double.tryParse(priceController.text) ?? 0.0;
+    final price = int.parse(priceController.text);
     final number = numberController.text;
 
     if (type.isNotEmpty && price > 0 && number.isNotEmpty) {
@@ -98,9 +98,9 @@ class _CementPageState extends State<CementPage> {
     }
   }
 
-  double totalCementPrice = 0.0;
+  int totalCementPrice = 0;
   void calculateTotalPrice() {
-    double totalPrice = 0.0;
+    int totalPrice = 0;
     for (final cement in cementList) {
       totalPrice += cement.price;
     }
@@ -150,7 +150,7 @@ class _CementPageState extends State<CementPage> {
 
       setState(
         () {
-          totalCementPrice = double.parse(snapshot['totalCost'] ?? 0);
+          totalCementPrice = snapshot['totalCost'] ?? 0;
         },
       );
       setState(
@@ -248,7 +248,7 @@ class _CementPageState extends State<CementPage> {
 
 class CementData {
   final String type;
-  final double price;
+  final int price;
   final String number;
 
   CementData({

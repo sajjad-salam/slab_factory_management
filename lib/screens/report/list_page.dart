@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Listpage extends StatefulWidget {
@@ -19,15 +20,17 @@ class _ListpageState extends State<Listpage> {
   void initState() {
     super.initState();
     loadSecondaryExpensesFromFirestore();
-    gettotal_in();
+    gettotal_outCost();
+    loadTotal_output();
     loadCostaggregateData();
     loadCostcementdData();
     loadCostsandData();
-    gettotal_in2();
     loadCostData();
+    loadTotal_in_with_output();
+    gettotal_in2();
   }
 
-  double totalCementPrice = 0.0;
+  int totalCementPrice = 0;
 
   bool _isLoading = false;
   Future<void> loadCostcementdData() async {
@@ -50,6 +53,7 @@ class _ListpageState extends State<Listpage> {
       );
       setState(
         () {
+          // outtotal = total_in2 - total_in;
           _isLoading = false;
         },
       );
@@ -58,7 +62,7 @@ class _ListpageState extends State<Listpage> {
     }
   }
 
-  double totalsandtPrice = 0.0;
+  int totalsandtPrice = 0;
 
   // bool _isLoading = false;
   Future<void> loadCostsandData() async {
@@ -89,7 +93,35 @@ class _ListpageState extends State<Listpage> {
     }
   }
 
-  double totalaggregatetPrice = 0.0;
+  int totalOutCost = 0;
+
+  void gettotal_outCost() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot =
+          await firestore.collection('total_out_cost').doc('total').get();
+
+      setState(
+        () {
+          totalOutCost = snapshot['Total'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
+  }
+
+  int totalaggregatetPrice = 0;
 
   // bool _isLoading = false;
   Future<void> loadCostaggregateData() async {
@@ -122,18 +154,58 @@ class _ListpageState extends State<Listpage> {
 
   int outtotal = 0;
   int total_in = 0;
-  void gettotal_in() async {
-    setState(() {
-      _isLoading = true;
-    });
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final int storedProductionTotal = prefs.getInt('total_in') ?? 0;
-    final int totalNumberOut = prefs.getInt('total_number_out') ?? 0;
-    setState(() {
-      total_in = storedProductionTotal;
-      outtotal = totalNumberOut;
-      _isLoading = false;
-    });
+  Future<void> loadTotal_output() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot =
+          await firestore.collection('total_out').doc('cost').get();
+
+      setState(
+        () {
+          outtotal = snapshot['total'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
+  }
+
+  Future<void> loadTotal_in_with_output() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot =
+          await firestore.collection('total_in').doc('total').get();
+
+      setState(
+        () {
+          total_in = snapshot['productionTotal'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          outtotal = total_in2 - total_in;
+
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
   }
 
   Future<void> getInventoryCount() async {
@@ -153,13 +225,24 @@ class _ListpageState extends State<Listpage> {
   int total_in2 = 0;
 
   void gettotal_in2() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final int storedProductionTotal = prefs.getInt('total_in2') ?? 0;
-    setState(
-      () {
-        total_in2 = storedProductionTotal;
-      },
-    );
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot =
+          await firestore.collection('total_in2').doc('total2').get();
+      setState(() {
+        total_in2 = snapshot['productionTotal'];
+      });
+      setState(() {
+        outtotal = total_in2 - total_in;
+
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading secondary expenses: $e');
+    }
   }
 
   double secondaryExpenses = 0;
@@ -242,14 +325,38 @@ class _ListpageState extends State<Listpage> {
     }
   }
 
+  Future<void> resettotalOut_cost() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      await firestore.collection('total_out_cost').doc('total').set({
+        'Total': 0,
+      });
+      setState(() {
+        totalOutCost = 0;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error resetting cost data: $e');
+    }
+  }
+
+// صافي الارباح
+  int ProfitsTotal = 0;
+
   Future<void> loadCostData() async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       DocumentSnapshot snapshot =
-          await firestore.collection('workers').doc('total').get();
+          await firestore.collection('workers1').doc('total').get();
+      DocumentSnapshot snapshot1 =
+          await firestore.collection('workers2').doc('total').get();
 
       setState(() {
-        totalCost = snapshot['totalCost'] ?? 0;
+        totalCost = snapshot['totalCost'] + snapshot1['totalCost'];
+        ProfitsTotal = totalOutCost - (totalCost + secondaryExpenses.toInt());
       });
     } catch (e) {
       print('Error loading cost data: $e');
@@ -275,78 +382,86 @@ class _ListpageState extends State<Listpage> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    const Text(
-                      "المخزون الكلي مع البيع ",
-                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
-                    ),
-                    Text(total_in.toString()),
-                    const Text(
-                      "المخزون الكلي عدا البيع ",
-                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
-                    ),
-                    Text(total_in2.toString()),
-                    const Text(
-                      "مجموع المصاريف الثانوية",
-                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
-                    ),
-                    Text(secondaryExpenses.toString()),
-                    const Text(
-                      ":الوارد الكلي ",
-                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
-                    ),
-                    const Text(
-                      "رمل",
-                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
-                    ),
                     Text(
-                      totalsandtPrice.toString(),
+                      "المخزون الكلي مع البيع ${total_in.toString()} ",
                       style:
                           const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
-                    const Text(
-                      "حصو",
-                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
-                    ),
                     Text(
-                      totalaggregatetPrice.toString(),
+                      "المخزون الكلي عدا البيع ${total_in2.toString()} ",
                       style:
                           const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
-                    const Text(
-                      "اسمنت",
-                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
-                    ),
                     Text(
-                      totalCementPrice.toString(),
+                      "مجموع المصاريف الثانوية ${secondaryExpenses.toString()} ",
                       style:
                           const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
-                    const Text(
-                      "كمية الصادر الكلية",
+                    Text(
+                      "      رمل   ${totalsandtPrice.toString()} ",
+                      style:
+                          const TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      "     حصو   ${totalaggregatetPrice.toString()} ",
+                      style:
+                          const TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      "     اسمنت  ${totalCementPrice.toString()} ",
+                      style:
+                          const TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      "كمية الصادر الكلية  ${outtotal.toString()} ",
+                      style:
+                          const TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      "مبلغ الصادر الكلي ${totalOutCost.toString()}",
+                      style:
+                          const TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      "مبلغ العمال الكلي  ${totalCost.toString()}",
                       style: TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     Text(
-                      outtotal.toString(),
-                      style:
-                          const TextStyle(fontFamily: "myfont", fontSize: 20),
+                      "  صافي الارباح  ${ProfitsTotal.toString()}",
+                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     ElevatedButton(
                       onPressed: () {
                         resetCostDataToZero();
+                        Get.snackbar("الرسالة", "تم تصفير حساب العمال",
+                            snackPosition: SnackPosition.BOTTOM);
                       },
                       child: const Text('تصفير حساب العمال '),
                     ),
                     ElevatedButton(
                       onPressed: () {
                         resettotal_in2ToZero();
+                        Get.snackbar(
+                            "الرسالة", "تم تصفير المخزون الكلي عدا البيع",
+                            snackPosition: SnackPosition.BOTTOM);
                       },
                       child: const Text('تصفير  المخزون الكلي عدا البيع '),
                     ),
                     ElevatedButton(
                       onPressed: () {
                         resetsecondaryExpenses();
+                        Get.snackbar("الرسالة", "تم تصفير  المصاريف الثانوية",
+                            snackPosition: SnackPosition.BOTTOM);
                       },
                       child: const Text('تصفيرالمصاريف الثانوية'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        resettotalOut_cost();
+                        Get.snackbar("الرسالة", "تم تصفير  مبلغ الصادر الكلي",
+                            snackPosition: SnackPosition.BOTTOM);
+                      },
+                      child: const Text(' تصفير مبلغ الصادر الكلي'),
                     ),
                   ],
                 ),
