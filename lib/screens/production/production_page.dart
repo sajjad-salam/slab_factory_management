@@ -71,6 +71,7 @@ class _ProductionPageState extends State<ProductionPage> {
     loadWeeklyDataFromStorage();
     getUnaffectedProductionTotal();
     gettotal_in();
+    // loadWeeklyProductionFromDatabase();
   }
 
   void updateDataAndCheckInternet() async {
@@ -213,6 +214,72 @@ class _ProductionPageState extends State<ProductionPage> {
       );
     } catch (e) {
       print('Error saving weekly production to the database: $e');
+    }
+  }
+
+  Future<void> loadWeeklyProductionFromDatabase() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final firestore = FirebaseFirestore.instance;
+      final collectionRef =
+          firestore.collection('weekly_production$number_factory');
+
+      // Fetch all documents from the collection
+      final snapshot = await collectionRef.get();
+
+      int totalProduction = 0;
+      List<String> weeklySchedule = [];
+
+      // Process the documents
+      for (DocumentSnapshot doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final day = data['day'];
+        final productionNumber = data['productionNumber'];
+
+        // Accumulate production numbers
+        totalProduction = productionNumber + totalProduction;
+
+        // Build a weeklySchedule list
+        weeklySchedule.add('$day: $productionNumber');
+      }
+
+      // Update the state variables
+      setState(() {
+        weeklyProductionTotal = totalProduction;
+        weeklySchedule = weeklySchedule;
+      });
+
+      print('Weekly production data loaded from the database.');
+
+      // Fetch unaffected production total from device storage
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      final unaffectedTotal =
+          prefs.getInt('unaffectedProductionTotal$number_factory') ?? 0;
+      setState(() {
+        unaffectedWeeklyProductionTotal = unaffectedTotal;
+      });
+
+      // Fetch unaffected weekly production total from the database
+      final unaffectedProductionDoc = await firestore
+          .collection('unaffected_production$number_factory')
+          .doc('total')
+          .get();
+      final unaffectedProductionData =
+          unaffectedProductionDoc.data() as Map<String, dynamic>;
+      final unaffectedTotalFromDB = unaffectedProductionData['productionTotal'];
+
+      setState(() {
+        unaffectedWeeklyProductionTotal = unaffectedTotalFromDB;
+      });
+
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading weekly production data from the database: $e');
     }
   }
 

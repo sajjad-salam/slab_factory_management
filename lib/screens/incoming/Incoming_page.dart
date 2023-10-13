@@ -29,7 +29,6 @@ class _incoming_screenState extends State<incoming_screen> {
     loadCostsandData();
     loadCostcementdData();
     loadCostaggregateData();
-    // startDataUpdateTimer();
   }
 
   int totalCementPrice = 0;

@@ -115,6 +115,9 @@ class _DayPageState extends State<DayPage> {
   }
 
   Future<void> saveCostData() async {
+    setState(() {
+      _isLoading = true;
+    });
     switch (selectedWorker) {
       case 'worker1':
         worker1 += (productionQuantity * cost_mold) / number_of_workers;
@@ -216,6 +219,9 @@ class _DayPageState extends State<DayPage> {
     } catch (e) {
       print('Error saving cost data: $e');
     }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   TextEditingController productionController = TextEditingController();
@@ -280,6 +286,9 @@ class _DayPageState extends State<DayPage> {
   }
 
   Future<void> saveWeeklyProductionToDatabase() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -338,6 +347,9 @@ class _DayPageState extends State<DayPage> {
           'productionTotal': unaffectedWeeklyProductionTotal,
         },
       );
+      setState(() {
+        _isLoading = false;
+      });
     } catch (e) {
       print('Error saving weekly production to the database: $e');
     }

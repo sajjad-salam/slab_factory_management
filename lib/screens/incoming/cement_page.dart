@@ -72,8 +72,9 @@ class _CementPageState extends State<CementPage> {
       _isLoading = true;
     });
     final type = typeController.text;
-    final price = int.parse(priceController.text);
     final number = numberController.text;
+    final price =
+        int.parse(priceController.text) * int.parse(numberController.text);
 
     if (type.isNotEmpty && price > 0 && number.isNotEmpty) {
       final cementData = CementData(type: type, price: price, number: number);
