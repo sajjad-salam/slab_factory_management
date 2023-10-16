@@ -1,14 +1,14 @@
-// ignore_for_file: avoid_print, prefer_const_constructors, use_build_context_synchronously, non_constant_identifier_names
+// ignore_for_file: avoid_print, prefer_const_constructors, use_build_context_synchronously, non_constant_identifier_names, no_logic_in_create_state
 
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'day_page.dart';
 
@@ -62,6 +62,7 @@ class _ProductionPageState extends State<ProductionPage> {
   @override
   void dispose() {
     productionController.dispose();
+
     super.dispose();
   }
 

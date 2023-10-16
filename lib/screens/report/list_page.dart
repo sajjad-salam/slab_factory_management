@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Listpage extends StatefulWidget {
   const Listpage({super.key});
@@ -424,11 +423,13 @@ class _ListpageState extends State<Listpage> {
                     ),
                     Text(
                       "مبلغ العمال الكلي  ${totalCost.toString()}",
-                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                      style:
+                          const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     Text(
                       "  صافي الارباح  ${ProfitsTotal.toString()}",
-                      style: TextStyle(fontFamily: "myfont", fontSize: 20),
+                      style:
+                          const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     ElevatedButton(
                       onPressed: () {
