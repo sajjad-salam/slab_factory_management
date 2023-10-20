@@ -112,14 +112,25 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
             .add(note.toJson());
       }
 
-      setState(() {
-        int intval = total.toInt();
-        noteController.text = intval.toString();
-        totalOutCost = totalOutCost + (int.parse(noteController.text));
-      });
+      setState(
+        () {
+          int intval = total.toInt();
+          noteController.text = intval.toString();
+
+          totalOutCost = totalOutCost + (int.parse(noteController.text));
+          if ((int.parse(noteController.text) > 0)) {
+            totalOutCost1 = totalOutCost1 + (int.parse(noteController.text));
+          }
+        },
+      );
       await firestore.collection('total_out_cost').doc('total').set(
         {
           'Total': totalOutCost,
+        },
+      );
+      await firestore.collection('total_out_cost1').doc('total').set(
+        {
+          'Total': totalOutCost1,
         },
       );
 
@@ -255,6 +266,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
     super.initState();
     loadTotal_output();
     gettotal_outCost();
+    gettotal_outCost2();
     gettotal_in();
     // loadNotesForClientFromLocalStorage(widget.customer.name).then((value) {
     //   setState(() {
@@ -283,32 +295,6 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
     super.dispose();
   }
 
-  // Future<void> addCementDataToFirestore() async {
-  //   setState(() {
-  //     _isLoading = true;
-  //   });
-  //   try {
-  //     FirebaseFirestore firestore = FirebaseFirestore.instance;
-  //     CollectionReference customerCollection =
-  //         firestore.collection('Customers');
-
-  //     await customerCollection.add(
-  //       {
-  //         'name': widget.customer.id,
-  //         //  حاصل ضرب المعطى في التكست فيلد
-  //         'price': total,
-  //         'notes': noteController.text,
-  //       },
-  //     );
-  //     setState(() {
-  //       _isLoading = false;
-  //       int intval = total.toInt();
-  //       noteController.text = intval.toString();
-  //     });
-  //   } catch (e) {
-  //     print('Error adding cement data to Firestore: $e');
-  //   }
-  // }
   double totaloutputing = 0;
 
   Future<void> updateTotal_output() async {
@@ -366,6 +352,34 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
   }
 
   int totalOutCost = 0;
+  int totalOutCost1 = 0;
+
+  void gettotal_outCost2() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot =
+          await firestore.collection('total_out_cost1').doc('total').get();
+
+      setState(
+        () {
+          totalOutCost1 = snapshot['Total'] ?? 0;
+        },
+      );
+
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
+  }
 
   void gettotal_outCost() async {
     setState(
@@ -455,13 +469,8 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                 filterAndProcessText(noteController.text);
                 addNote();
                 flankot.text = shtager.toString();
-                updateTotal_output();
+                // updateTotal_output();
                 updateTotal_in();
-                // updateTotal_out_cost();
-                // loadNotesFromDatabase();
-                // saveNotesForCustomer(widget.customer.name, notes);
-                // saveNotes_in_database(notes);
-                // addCementDataToFirestore();
               },
               placeholder: "....  اضافة وصل جديد",
               // maxLength: 10,
@@ -481,10 +490,10 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                       double intflankot = shtager + widget.customer.flankot;
                       int intmastek = int.parse(mastek.text);
                       widget.customer.customerNumber;
-                      // updateTotal_output();
                       setState(() {
                         _isLoading = true;
                       });
+                      updateTotal_output();
 
                       try {
                         setState(() {

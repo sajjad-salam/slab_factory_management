@@ -173,11 +173,17 @@ class _WorkersPageState extends State<WorkersPage> {
                 const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () {
-                    edit_modl_cost();
-                    edit_number_of_workers();
-                    Get.snackbar("رسالة",
-                        "تم تحديث البيانات قم بالرجوع مرة اخرى الى هذه الصفحة ",
-                        snackPosition: SnackPosition.BOTTOM);
+                    if (priceController.text != "" &&
+                        numberofworkers.text != "") {
+                      edit_modl_cost();
+                      edit_number_of_workers();
+                      Get.snackbar("رسالة",
+                          "تم تحديث البيانات قم بالرجوع مرة اخرى الى هذه الصفحة ",
+                          snackPosition: SnackPosition.BOTTOM);
+                    } else {
+                      Get.snackbar("خطأ", "كل الحقول مطلوبة عزيزي",
+                          snackPosition: SnackPosition.BOTTOM);
+                    }
                   },
                   child: const Text(
                     'تحديث الاعداد',

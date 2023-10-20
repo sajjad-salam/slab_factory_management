@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, non_constant_identifier_names, empty_catches, no_logic_in_create_state, use_build_context_synchronously
+// ignore_for_file: avoid_print, non_constant_identifier_names, empty_catches, no_logic_in_create_state, use_build_context_synchronously, division_optimization
 
 import 'package:flutter/cupertino.dart';
 import 'dart:async';
@@ -117,37 +117,41 @@ class _DayPageState extends State<DayPage> {
     setState(() {
       _isLoading = true;
     });
+
     switch (selectedWorker) {
       case 'worker1':
         worker1 += (productionQuantity * cost_mold) / number_of_workers;
         worker1d += 1;
+        totalCost +=
+            ((productionQuantity * cost_mold) / number_of_workers).toInt();
+
         break;
       case 'worker2':
         worker6 += (productionQuantity * cost_mold) / number_of_workers;
         worker6d += 1;
+        totalCost +=
+            ((productionQuantity * cost_mold) / number_of_workers) as int;
         break;
       case 'worker3':
         worker7 += (productionQuantity * cost_mold) / number_of_workers;
         worker7d += 1;
+        totalCost +=
+            ((productionQuantity * cost_mold) / number_of_workers) as int;
         break;
       case 'worker4':
         worker8 += (productionQuantity * cost_mold) / number_of_workers;
         worker8d += 1;
+        totalCost +=
+            ((productionQuantity * cost_mold) / number_of_workers) as int;
         break;
       case 'worker5':
         worker5 += (productionQuantity * cost_mold) / number_of_workers;
         worker5d += 1;
+        totalCost +=
+            ((productionQuantity * cost_mold) / number_of_workers) as int;
         break;
     }
-    try {
-      totalCost += worker1.toInt() +
-          worker6.toInt() +
-          worker5.toInt() +
-          worker7.toInt() +
-          worker8.toInt();
-    } catch (e) {
-      print(e);
-    }
+
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       await firestore.collection('workers$number_factory').doc('cost').set({
@@ -161,57 +165,7 @@ class _DayPageState extends State<DayPage> {
         'worker2d': worker6d,
         'worker3d': worker7d,
         'worker5d': worker5d,
-
-        // 'totalCost': totalCost,
       });
-      // if (worker1d != 0) {
-      //   await firestore.collection('workers$number_factory').doc('cost').set({
-      //     'worker1': worker1,
-      //     'worker1d': worker1d,
-      //     'worker2': worker2,
-      //     'worker4cost': worker4cost,
-
-      //     'worker3': worker3,
-
-      //     // 'totalCost': totalCost,
-      //   });
-      // }
-      // if (mohammeddays != 0) {
-      //   await firestore.collection('workers$number_factory').doc('cost').set({
-      //     'worker1': worker1,
-      //     'worker2': worker2,
-      //     'worker4cost': worker4cost,
-
-      //     'muhammadays': worker2,
-      //     'worker3': worker3,
-
-      //     // 'totalCost': totalCost,
-      //   });
-      // }
-      // if (philanthropist_dsys != 0) {
-      //   await firestore.collection('workers$number_factory').doc('cost').set({
-      //     'worker1': worker1,
-      //     'worker2': worker2,
-      //     'worker4cost': worker4cost,
-
-      //     'worker3': worker3,
-      //     'philanthropistdays': philanthropist_dsys,
-
-      //     // 'totalCost': totalCost,
-      //   });
-      // }
-      // if (worker4days != 0) {
-      //   await firestore.collection('workers$number_factory').doc('cost').set({
-      //     'worker1': worker1,
-      //     'worker2': worker2,
-      //     'worker4cost': worker4cost,
-      //     'worker4days': worker4days,
-
-      //     'worker3': worker3,
-
-      //     // 'totalCost': totalCost,
-      //   });
-      // }
       await firestore.collection('workers$number_factory').doc('total').set({
         'totalCost': totalCost,
       });
@@ -224,9 +178,7 @@ class _DayPageState extends State<DayPage> {
   }
 
   TextEditingController productionController = TextEditingController();
-
   int totalWeeklyProduction = 0;
-
   List<String> weeklySchedule = [
     'الأحد: 0',
     'الأثنين: 0',
@@ -236,10 +188,8 @@ class _DayPageState extends State<DayPage> {
     'الجمعة: 0',
     'السبت: 0',
   ];
-
   String production = '';
   String inventory = '';
-
   @override
   void dispose() {
     productionController.dispose();
@@ -247,10 +197,8 @@ class _DayPageState extends State<DayPage> {
   }
 
   TextEditingController noteController = TextEditingController();
-
   MaterialStateProperty<Color?> amberColor =
       MaterialStateProperty.all<Color?>(const Color.fromARGB(255, 105, 63, 0));
-
   void updateDataAndCheckInternet() async {
     bool hasInternet = await checkInternetConnectivity();
     if (hasInternet) {
@@ -741,7 +689,6 @@ class _DayPageState extends State<DayPage> {
                 style: TextStyle(fontFamily: "myfont", fontSize: 18),
               ),
             ),
-            const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () async {
                 deleteCostDocument();

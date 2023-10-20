@@ -20,6 +20,7 @@ class _ListpageState extends State<Listpage> {
     super.initState();
     loadSecondaryExpensesFromFirestore();
     gettotal_outCost();
+    gettotal_outCost2();
     loadTotal_output();
     loadCostaggregateData();
     loadCostcementdData();
@@ -244,6 +245,34 @@ class _ListpageState extends State<Listpage> {
     }
   }
 
+  int totalOutCost1 = 0;
+
+  void gettotal_outCost2() async {
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot snapshot =
+          await firestore.collection('total_out_cost1').doc('total').get();
+
+      setState(
+        () {
+          totalOutCost1 = snapshot['Total'] ?? 0;
+        },
+      );
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
+    } catch (e) {
+      print('Error loading cost data: $e');
+    }
+  }
+
   double secondaryExpenses = 0;
 
   Future<double> loadSecondaryExpensesFromFirestore() async {
@@ -353,10 +382,17 @@ class _ListpageState extends State<Listpage> {
       DocumentSnapshot snapshot1 =
           await firestore.collection('workers2').doc('total').get();
 
-      setState(() {
-        totalCost = snapshot['totalCost'] + snapshot1['totalCost'];
-        ProfitsTotal = totalOutCost - (totalCost + secondaryExpenses.toInt());
-      });
+      setState(
+        () {
+          totalCost = snapshot['totalCost'] + snapshot1['totalCost'];
+          ProfitsTotal = totalOutCost1 -
+              (totalCost +
+                  secondaryExpenses.toInt() +
+                  totalCementPrice +
+                  totalaggregatetPrice +
+                  totalsandtPrice);
+        },
+      );
     } catch (e) {
       print('Error loading cost data: $e');
     }
@@ -412,17 +448,22 @@ class _ListpageState extends State<Listpage> {
                           const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     Text(
-                      "كمية الصادر الكلية  ${outtotal.toString()} ",
+                      "  كمية الشتايكر المبيوع  ${outtotal.toString()} ",
                       style:
                           const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     Text(
-                      "مبلغ الصادر الكلي ${totalOutCost.toString()}",
+                      "  الباقي من البايعهن ${totalOutCost.toString()}",
                       style:
                           const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
                     Text(
-                      "مبلغ العمال الكلي  ${totalCost.toString()}",
+                      "   مبلغ الشتايكر المبيوع هوة والطلب  ${totalOutCost1.toString()}",
+                      style:
+                          const TextStyle(fontFamily: "myfont", fontSize: 20),
+                    ),
+                    Text(
+                      "حساب العمال الكلي  ${totalCost.toString()}",
                       style:
                           const TextStyle(fontFamily: "myfont", fontSize: 20),
                     ),
