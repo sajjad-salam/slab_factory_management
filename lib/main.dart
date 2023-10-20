@@ -10,7 +10,7 @@ import 'screens/incoming/cement_page.dart';
 import 'screens/login/login_page.dart';
 import 'screens/notes/notes_page.dart';
 import 'screens/outputing/out_page.dart';
-import 'screens/production/chose_factory.dart';
+import 'screens/production/pages/chose_factory.dart';
 import 'screens/numbers/numbers_page.dart';
 
 void main() async {
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    var rout = GetMaterialApp(
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       defaultTransition: Transition.cupertinoDialog,
@@ -75,5 +75,6 @@ class MyApp extends StatelessWidget {
         ),
       ],
     );
+    return rout;
   }
 }

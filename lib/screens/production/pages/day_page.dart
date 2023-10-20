@@ -8,6 +8,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:slab_factory_management/screens/production/widget/buttons.dart';
 
 class DayPage extends StatefulWidget {
   final String day;
@@ -524,10 +525,7 @@ class _DayPageState extends State<DayPage> {
                   },
                 );
               },
-              decoration: BoxDecoration(
-                // color: CupertinoColors.extraLightBackgroundGray,
-                borderRadius: BorderRadius.circular(10),
-              ),
+              decoration: decuration(),
               controller: productionController,
               autocorrect: true,
               textInputAction: TextInputAction.done,
@@ -689,22 +687,18 @@ class _DayPageState extends State<DayPage> {
                 style: TextStyle(fontFamily: "myfont", fontSize: 18),
               ),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                deleteCostDocument();
-                Get.snackbar("رسالة",
-                    " تم تصفير حساب العمال بنجاح يرجى الخروخ والعودة مجددا",
-                    snackPosition: SnackPosition.BOTTOM);
-              },
-              child: const Text(
-                'تصفير حساب العمال ',
-                style: TextStyle(fontFamily: "myfont", fontSize: 18),
-              ),
-            ),
+            buttonresetworkerdata(deleteCostDocument: deleteCostDocument),
             const SizedBox(height: 20),
           ],
         ),
       ),
+    );
+  }
+
+  BoxDecoration decuration() {
+    return BoxDecoration(
+      // color: CupertinoColors.extraLightBackgroundGray,
+      borderRadius: BorderRadius.circular(10),
     );
   }
 }

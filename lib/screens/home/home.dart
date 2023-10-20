@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../widgets/mybutton.dart';
 
@@ -16,10 +17,33 @@ class _champ_screenState extends State<home_screen> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    double screenWidth = size.width;
     return Scaffold(
-      appBar: const CupertinoNavigationBar(
+      appBar: CupertinoNavigationBar(
         previousPageTitle: "رجوع",
-        middle: Text(
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: Text(
+            'المطور',
+            style: TextStyle(
+              color: Colors.blue[800],
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          onPressed: () {
+            Get.snackbar(
+              backgroundColor: Colors.black45,
+              padding: EdgeInsets.only(left: screenWidth - 150),
+              colorText: Colors.white,
+              '                :المطور',
+              'المهندس سجاد سلام\n 07748820206',
+              snackPosition: SnackPosition.BOTTOM,
+              duration: const Duration(seconds: 3),
+            );
+          },
+        ),
+        middle: const Text(
           "الصفحة الرئيسية",
           style: TextStyle(fontFamily: "myfont", fontSize: 25),
         ),

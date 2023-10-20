@@ -2,7 +2,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:slab_factory_management/screens/production/production_page.dart';
+import 'package:slab_factory_management/screens/production/pages/production_page.dart';
 
 class chose_factory extends StatefulWidget {
   const chose_factory({super.key});
