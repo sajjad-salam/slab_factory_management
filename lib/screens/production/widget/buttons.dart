@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+// ignore: camel_case_types
 class buttonresetworkerdata extends StatelessWidget {
   const buttonresetworkerdata({super.key, required this.deleteCostDocument});
   final Function deleteCostDocument;
