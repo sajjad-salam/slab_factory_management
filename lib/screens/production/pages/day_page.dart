@@ -130,26 +130,27 @@ class _DayPageState extends State<DayPage> {
       case 'worker2':
         worker6 += (productionQuantity * cost_mold) / number_of_workers;
         worker6d += 1;
+
         totalCost +=
-            ((productionQuantity * cost_mold) / number_of_workers) as int;
+            ((productionQuantity * cost_mold) / number_of_workers).toInt();
         break;
       case 'worker3':
         worker7 += (productionQuantity * cost_mold) / number_of_workers;
         worker7d += 1;
         totalCost +=
-            ((productionQuantity * cost_mold) / number_of_workers) as int;
+            ((productionQuantity * cost_mold) / number_of_workers).toInt();
         break;
       case 'worker4':
         worker8 += (productionQuantity * cost_mold) / number_of_workers;
         worker8d += 1;
         totalCost +=
-            ((productionQuantity * cost_mold) / number_of_workers) as int;
+            ((productionQuantity * cost_mold) / number_of_workers).toInt();
         break;
       case 'worker5':
         worker5 += (productionQuantity * cost_mold) / number_of_workers;
         worker5d += 1;
         totalCost +=
-            ((productionQuantity * cost_mold) / number_of_workers) as int;
+            ((productionQuantity * cost_mold) / number_of_workers).toInt();
         break;
     }
 

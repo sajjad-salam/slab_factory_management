@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "465130537085",
-    "project_id": "slab-factory",
-    "storage_bucket": "slab-factory.appspot.com"
+    "project_number": "920476182992",
+    "project_id": "slab-factory-82241",
+    "storage_bucket": "slab-factory-82241.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:465130537085:android:cd72275c3b707907053114",
+        "mobilesdk_app_id": "1:920476182992:android:315ead08787dba041fb1d5",
         "android_client_info": {
           "package_name": "com.example.slab_factory_management"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAiTrWaipmzuQ8E9hW0cmJSAfzG_PILJ0Q"
+          "current_key": "AIzaSyA7LKYqggML6SvTbfYy86hDAs9z2tsSGEg"
         }
       ],
       "services": {
